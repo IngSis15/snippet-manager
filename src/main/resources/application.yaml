@@ -1,0 +1,11 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: Demo
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:example}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:demo}
