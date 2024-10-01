@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: Demo
+    name: Snippet Manager
   datasource:
     driver-class-name: org.postgresql.Driver
     username: ${DB_USERNAME:admin}

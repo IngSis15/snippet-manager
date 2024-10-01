@@ -1,11 +1,11 @@
-package edu.ingsis.demo
+package edu.ingisis.snippet
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class DemoApplication
+class SnippetManagerApplication
 
 fun main(args: Array<String>) {
-	runApplication<DemoApplication>(*args)
+    runApplication<SnippetManagerApplication>(*args)
 }
