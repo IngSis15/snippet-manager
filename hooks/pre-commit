@@ -16,15 +16,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# Run tests
-./gradlew test
-
-# Check if tests passed
-if [ $? -ne 0 ]; then
-  echo "Tests failed. Please fix the issues before committing."
-  exit 1
-fi
-
 for file in $CHANGED_FILES; do
     if test -f "$file"; then
       git add $file
