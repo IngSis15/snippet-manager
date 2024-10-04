@@ -1,4 +1,4 @@
-package edu.ingisis.snippet.health
+package edu.ingsis.snippetmanager.health
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping

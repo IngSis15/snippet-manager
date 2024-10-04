@@ -1,4 +1,4 @@
-package edu.ingisis.snippet
+package edu.ingsis.snippetmanager
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
