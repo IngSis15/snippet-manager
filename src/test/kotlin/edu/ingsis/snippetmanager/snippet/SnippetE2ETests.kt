@@ -33,7 +33,7 @@ class SnippetE2ETests
 
         @Test
         fun `can get snippet from id`() {
-            client.get().uri("${Companion.BASE}/1")
+            client.get().uri("$BASE/1")
                 .exchange()
                 .expectStatus().isOk
                 .expectBody()

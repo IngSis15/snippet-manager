@@ -1,5 +1,7 @@
 package edu.ingsis.snippetmanager.snippet
 
+import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
+import io.swagger.v3.oas.annotations.Operation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 class SnippetController
     @Autowired
     constructor(private val service: SnippetService) {
+        @Operation(summary = "Create new snippet")
         @PostMapping
         fun createSnippet(
             @RequestBody snippet: SnippetDto,
@@ -20,6 +23,7 @@ class SnippetController
             return service.createSnippet(snippet.title, snippet.description, snippet.content)
         }
 
+        @Operation(summary = "Get snippet by id")
         @GetMapping("/{id}")
         fun getSnippetById(
             @PathVariable id: Long,
