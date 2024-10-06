@@ -7,13 +7,11 @@ object SnippetFixtures {
                 "Declaration",
                 "This snippet declares a variable x",
                 "let x: number = 5;",
-                1,
             ),
             Snippet(
                 "Hello World",
                 "Prints \"Hello, World!\"",
                 "println(\"Hello, World!\");",
-                2,
             ),
         )
 }
