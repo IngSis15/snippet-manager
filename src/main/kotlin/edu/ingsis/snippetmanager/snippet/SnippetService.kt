@@ -11,7 +11,7 @@ class SnippetService
     @Autowired
     constructor(private val repository: SnippetRepository) {
         fun getAllSnippets(): List<Snippet> {
-           return repository.findAll().toList()
+            return repository.findAll().toList()
         }
 
         fun getSnippet(id: Long): Snippet {
