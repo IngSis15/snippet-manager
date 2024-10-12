@@ -18,3 +18,7 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+
+services:
+  printscript:
+    url: ${PRINTSCRIPT_HOST:http://localhost:9090}
