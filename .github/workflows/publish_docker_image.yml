@@ -16,8 +16,8 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: IngSis15
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
 
       - name: Push to GitHub Packages Stable
         if: github.ref == 'refs/heads/main'
@@ -26,7 +26,7 @@ jobs:
         with:
           push: true
           tags: |
-           ghcr.io/IngSis15/snippet-manager:latest
+           ghcr.io/ingsis15/snippet-manager:latest
 
       - name: Push to GitHub Packages Dev
         if: github.ref == 'refs/heads/dev'
@@ -35,6 +35,6 @@ jobs:
         with:
           push: true
           tags: |
-           ghcr.io/IngSis15/snippet-manager:dev
+           ghcr.io/ingsis15/snippet-manager:dev
         
         
