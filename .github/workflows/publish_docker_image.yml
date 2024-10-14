@@ -1,19 +1,14 @@
-name: "Continuous Deployment"
+name: Publish Docker image to GitHub Packages
 on:
   push:
     branches:
       - main
+      - dev
 jobs:
   push_to_registry:
     name: Push Docker image to GitHub Packages
     runs-on: ubuntu-latest
     steps:
-      - name: Create Short SHA
-        uses: benjlevesque/short-sha@v1.2
-        id: short-sha
-        with:
-          length: 8
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -24,11 +19,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
 
-      - name: Push to GitHub Packages
-        id: docker_build
+      - name: Push to GitHub Packages Stable
+        if: github.ref == 'refs/heads/main'
+        id: docker_build_stable
         uses: docker/build-push-action@v4
         with:
           push: true
           tags: |
-           ghcr.io/ingsis15/snippet-manager:${{ steps.short-sha.outputs.sha }}
+           ghcr.io/ingsis15/snippet-manager:latest
+
+      - name: Push to GitHub Packages Dev
+        if: github.ref == 'refs/heads/dev'
+        id: docker_build_dev
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: |
+           ghcr.io/ingsis15/snippet-manager:dev
+        
         

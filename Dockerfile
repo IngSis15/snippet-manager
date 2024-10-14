@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM gradle:8.1-jdk17 AS builder
+FROM gradle:8.10-jdk17 AS builder
 
 # Set the working directory inside the container
 WORKDIR /app
