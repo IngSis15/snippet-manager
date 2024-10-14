@@ -1,6 +1,6 @@
 package edu.ingsis.snippetmanager.snippet
 
-import edu.ingsis.snippetmanager.external.printscript.PrintScriptService
+import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateDTO
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,7 +13,7 @@ class SnippetService
     @Autowired
     constructor(
         private val repository: SnippetRepository,
-        private val printScriptService: PrintScriptService,
+        private val printScriptService: PrintScriptApi,
     ) {
         fun getAllSnippets(): List<Snippet> {
             return repository.findAll().toList()

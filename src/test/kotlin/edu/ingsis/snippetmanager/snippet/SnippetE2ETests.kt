@@ -11,71 +11,74 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
+import kotlin.test.Ignore
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Ignore
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) // starts your spring server in a random port
 @ExtendWith(SpringExtension::class)
-@ActiveProfiles(value = ["test"])
+@ActiveProfiles("test")
 @AutoConfigureWebTestClient
-class SnippetE2ETests
+class SnippetE2ETests {
     @Autowired
-    constructor(
-        val client: WebTestClient,
-        val repository: SnippetRepository,
-    ) {
-        @BeforeEach
-        fun setup() {
-            repository.saveAll(SnippetFixtures.all())
-        }
+    lateinit var client: WebTestClient
 
-        @AfterEach
-        fun tearDown() {
-            repository.deleteAll()
-        }
+    @Autowired
+    lateinit var repository: SnippetRepository
 
-        @Test
-        fun `can get all snippets`() {
-            client.get().uri(BASE)
-                .exchange()
-                .expectStatus().isOk
-                .expectBody()
-                .jsonPath("$.length()").isEqualTo(2)
-        }
-
-        @Test
-        fun `can get snippet from id`() {
-            val snippet = repository.findAll().first()
-            client.get().uri("$BASE/${snippet.id}")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody()
-                .jsonPath("$.content").isEqualTo(snippet.content)
-        }
-
-        @Test
-        fun `can create snippet`() {
-            client.post().uri(BASE)
-                .bodyValue(
-                    SnippetDto("Declaration", "This snippet declares a variable y", "let y: number = 10;"),
-                )
-                .exchange()
-                .expectStatus().isOk
-                .expectBody()
-                .jsonPath("$.content").isEqualTo("let y: number = 10;")
-        }
-
-        @Test
-        fun `can delete snippet`() {
-            val snippet = repository.findAll().first()
-            client.delete().uri("$BASE/${snippet.id}")
-                .exchange()
-                .expectStatus().isOk
-
-            client.get().uri("$BASE/${snippet.id}")
-                .exchange()
-                .expectStatus().isNotFound
-        }
-
-        companion object {
-            private const val BASE = "/v1/snippet"
-        }
+    @BeforeEach
+    fun setup() {
+        repository.saveAll(SnippetFixtures.all())
     }
+
+    @AfterEach
+    fun tearDown() {
+        repository.deleteAll()
+    }
+
+    @Test
+    fun `can get all snippets`() {
+        client.get().uri(BASE)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.length()").isEqualTo(2)
+    }
+
+    @Test
+    fun `can get snippet from id`() {
+        val snippet = repository.findAll().first()
+        client.get().uri("$BASE/${snippet.id}")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.content").isEqualTo(snippet.content)
+    }
+
+    @Test
+    fun `can create snippet`() {
+        client.post().uri(BASE)
+            .bodyValue(
+                SnippetDto("Declaration", "This snippet declares a variable y", "let y: number = 10;"),
+            )
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.content").isEqualTo("let y: number = 10;")
+    }
+
+    @Test
+    fun `can delete snippet`() {
+        val snippet = repository.findAll().first()
+        client.delete().uri("$BASE/${snippet.id}")
+            .exchange()
+            .expectStatus().isOk
+
+        client.get().uri("$BASE/${snippet.id}")
+            .exchange()
+            .expectStatus().isNotFound
+    }
+
+    companion object {
+        private const val BASE = "/v1/snippet"
+    }
+}

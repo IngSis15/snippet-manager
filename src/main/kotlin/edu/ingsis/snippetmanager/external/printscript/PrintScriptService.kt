@@ -10,10 +10,9 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 @Component
-class PrintScriptService {
-    @Value("\${services.printscript.url}")
-    lateinit var baseUrl: String
-
+class PrintScriptService(
+    @Value("\${services.printscript.url}") val baseUrl: String,
+) : PrintScriptApi {
     lateinit var webClient: WebClient
 
     @PostConstruct
@@ -21,7 +20,7 @@ class PrintScriptService {
         webClient = WebClient.create(baseUrl)
     }
 
-    fun validate(content: ValidateDTO): Mono<ValidateResultDTO> {
+    override fun validate(content: ValidateDTO): Mono<ValidateResultDTO> {
         return webClient.post()
             .uri("/v1/analyze")
             .bodyValue(content)
