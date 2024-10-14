@@ -21,7 +21,7 @@ jobs:
 
       - name: Push to GitHub Packages Stable
         if: github.ref == 'refs/heads/main'
-        id: docker_build
+        id: docker_build_stable
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -30,7 +30,7 @@ jobs:
 
       - name: Push to GitHub Packages Dev
         if: github.ref == 'refs/heads/dev'
-        id: docker_build
+        id: docker_build_dev
         uses: docker/build-push-action@v4
         with:
           push: true
