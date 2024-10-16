@@ -1,4 +1,4 @@
-package edu.ingsis.snippetmanager
+package edu.ingsis.snippetmanager.snippet
 
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateDTO

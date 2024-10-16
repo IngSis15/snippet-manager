@@ -6,18 +6,16 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
-import kotlin.test.Ignore
 
-@Ignore
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) // starts your spring server in a random port
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
-@AutoConfigureWebTestClient
+@Import(MockPrintScriptApiConfiguration::class)
 class SnippetE2ETests {
     @Autowired
     lateinit var client: WebTestClient
