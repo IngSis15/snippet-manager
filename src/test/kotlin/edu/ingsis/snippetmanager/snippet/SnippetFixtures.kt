@@ -4,14 +4,16 @@ object SnippetFixtures {
     fun all(): List<Snippet> =
         listOf(
             Snippet(
-                "Declaration",
-                "This snippet declares a variable x",
-                "let x: number = 5;",
+                title = "Declaration",
+                description = "This snippet declares a variable x",
+                version = "1.1",
+                content = "let x: number = 5;",
             ),
             Snippet(
-                "Hello World",
-                "Prints \"Hello, World!\"",
-                "println(\"Hello, World!\");",
+                title = "Hello World",
+                description = "Prints \"Hello, World!\"",
+                version = "1.1",
+                content = "println(\"Hello, World!\");",
             ),
         )
 }

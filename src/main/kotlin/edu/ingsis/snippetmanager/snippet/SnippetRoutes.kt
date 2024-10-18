@@ -23,7 +23,7 @@ class SnippetRoutes
         override fun createSnippet(
             @RequestBody snippet: SnippetDto,
         ): Snippet {
-            return service.createSnippet(snippet.title, snippet.description, snippet.content)
+            return service.createSnippet(snippet)
         }
 
         override fun deleteSnippet(

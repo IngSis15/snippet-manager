@@ -2,6 +2,7 @@ package edu.ingsis.snippetmanager.snippet
 
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateDTO
+import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -27,15 +28,11 @@ class SnippetService
             return snippet
         }
 
-        fun createSnippet(
-            title: String,
-            description: String,
-            content: String,
-        ): Snippet {
-            val snippet = Snippet(title, description, content)
+        fun createSnippet(snippet: SnippetDto): Snippet {
+            val snippet = translate(snippet)
 
             val validation =
-                printScriptService.validate(ValidateDTO(snippet.content, "1.0")).block()
+                printScriptService.validate(ValidateDTO(snippet.content, snippet.version)).block()
                     ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating snippet")
 
             if (!validation.ok) {
@@ -48,5 +45,14 @@ class SnippetService
         @Transactional
         fun deleteSnippet(id: Long) {
             return repository.deleteById(id)
+        }
+
+        private fun translate(snippet: SnippetDto): Snippet {
+            return Snippet(
+                title = snippet.title,
+                description = snippet.description,
+                version = snippet.version,
+                content = snippet.content,
+            )
         }
     }
