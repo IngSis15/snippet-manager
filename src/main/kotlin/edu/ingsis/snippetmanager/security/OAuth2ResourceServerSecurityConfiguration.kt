@@ -29,9 +29,9 @@ class OAuth2ResourceServerSecurityConfiguration(
         http.authorizeHttpRequests {
             it
                 .requestMatchers("/").permitAll()
-                .requestMatchers(GET, "/snippets").hasAuthority("SCOPE_read:snippets")
-                .requestMatchers(GET, "/snippets/*").hasAuthority("SCOPE_read:snippets")
-                .requestMatchers(POST, "/snippets").hasAuthority("SCOPE_write:snippets")
+                .requestMatchers(GET, "/snippet").hasAuthority("SCOPE_read:snippets")
+                .requestMatchers(GET, "/snippet/*").hasAuthority("SCOPE_read:snippets")
+                .requestMatchers(POST, "/snippet").hasAuthority("SCOPE_write:snippets")
                 .anyRequest().authenticated()
         }
             .oauth2ResourceServer { it.jwt(withDefaults()) }
