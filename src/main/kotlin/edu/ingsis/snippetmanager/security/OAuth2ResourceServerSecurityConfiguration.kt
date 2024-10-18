@@ -30,6 +30,7 @@ class OAuth2ResourceServerSecurityConfiguration(
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.authorizeHttpRequests {
             it
+                .requestMatchers("/health").permitAll()
                 .requestMatchers("/").permitAll()
                 .requestMatchers(GET, "/snippet").hasAuthority("SCOPE_read:snippets")
                 .requestMatchers(GET, "/snippet/*").hasAuthority("SCOPE_read:snippets")
