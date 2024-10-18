@@ -54,10 +54,16 @@ class SnippetE2ETests {
 
     @Test
     fun `can create snippet`() {
-        client.post().uri(BASE)
-            .bodyValue(
-                SnippetDto("Declaration", "This snippet declares a variable y", "let y: number = 10;"),
+        val snippet =
+            SnippetDto(
+                title = "Declaration",
+                description = "This snippet declares a variable y",
+                version = "1.1",
+                content = "let y: number = 10;",
             )
+
+        client.post().uri(BASE)
+            .bodyValue(snippet)
             .exchange()
             .expectStatus().isOk
             .expectBody()
