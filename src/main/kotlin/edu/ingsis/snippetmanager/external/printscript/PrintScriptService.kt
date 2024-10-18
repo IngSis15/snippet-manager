@@ -22,7 +22,7 @@ class PrintScriptService(
 
     override fun validate(content: ValidateDTO): Mono<ValidateResultDTO> {
         return webClient.post()
-            .uri("/v1/analyze")
+            .uri("/v1/validate")
             .bodyValue(content)
             .retrieve()
             .bodyToMono(ValidateResultDTO::class.java)
