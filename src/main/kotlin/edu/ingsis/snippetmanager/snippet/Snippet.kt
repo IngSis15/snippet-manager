@@ -13,5 +13,4 @@ class Snippet(
     val title: String,
     val description: String,
     val version: String,
-    val content: String,
 )

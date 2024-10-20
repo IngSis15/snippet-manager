@@ -1,6 +1,7 @@
 package edu.ingsis.snippetmanager.snippet
 
-import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
+import edu.ingsis.snippetmanager.external.MockPrintScriptApiConfiguration
+import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -25,7 +26,7 @@ class SnippetE2ETests {
 
     @BeforeEach
     fun setup() {
-        repository.saveAll(SnippetFixtures.all())
+        repository.saveAll(SnippetFixtures.all().map { translate(it) })
     }
 
     @AfterEach
@@ -49,13 +50,13 @@ class SnippetE2ETests {
             .exchange()
             .expectStatus().isOk
             .expectBody()
-            .jsonPath("$.content").isEqualTo(snippet.content)
+            .jsonPath("$.content").isEqualTo(snippet.title)
     }
 
     @Test
     fun `can create snippet`() {
         val snippet =
-            SnippetDto(
+            CreateSnippetDto(
                 title = "Declaration",
                 description = "This snippet declares a variable y",
                 version = "1.1",
@@ -80,6 +81,14 @@ class SnippetE2ETests {
         client.get().uri("$BASE/${snippet.id}")
             .exchange()
             .expectStatus().isNotFound
+    }
+
+    private fun translate(snippet: CreateSnippetDto): Snippet {
+        return Snippet(
+            title = snippet.title,
+            description = snippet.description,
+            version = snippet.version,
+        )
     }
 
     companion object {

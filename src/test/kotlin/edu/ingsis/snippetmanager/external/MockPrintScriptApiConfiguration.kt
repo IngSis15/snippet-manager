@@ -1,4 +1,4 @@
-package edu.ingsis.snippetmanager.snippet
+package edu.ingsis.snippetmanager.external
 
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import org.springframework.boot.test.context.TestConfiguration
@@ -12,7 +12,6 @@ class MockPrintScriptApiConfiguration {
     @Bean
     @Primary
     fun createMockPrintScriptApi(): PrintScriptApi {
-        println("hello")
         return PrintScriptApiMock()
     }
 }

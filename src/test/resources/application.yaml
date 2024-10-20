@@ -12,3 +12,5 @@ spring:
 services:
   printscript:
     url: http://mocked-url-for-test
+  asset:
+    url: http://mocked-url-for-test
