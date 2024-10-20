@@ -65,9 +65,11 @@ class SnippetService
 
         private fun translate(snippet: CreateSnippetDto): Snippet {
             return Snippet(
-                title = snippet.title,
+                name = snippet.name,
                 description = snippet.description,
+                language = snippet.language,
                 version = snippet.version,
+                extension = snippet.extension,
             )
         }
 
@@ -77,10 +79,12 @@ class SnippetService
         ): SnippetDto {
             return SnippetDto(
                 id = snippet.id,
-                title = snippet.title,
+                name = snippet.name,
                 description = snippet.description,
+                language = snippet.language,
                 version = snippet.version,
                 content = content,
+                extension = snippet.extension,
             )
         }
     }
