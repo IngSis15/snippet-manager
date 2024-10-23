@@ -1,7 +1,9 @@
 package edu.ingsis.snippetmanager.snippet
 
+import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateDTO
+import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,31 +17,45 @@ class SnippetService
     constructor(
         private val repository: SnippetRepository,
         private val printScriptService: PrintScriptApi,
+        private val assetService: AssetApi,
     ) {
-        fun getAllSnippets(): List<Snippet> {
-            return repository.findAll().toList()
+        fun getAllSnippets(): List<SnippetDto> {
+            return repository.findAll().map {
+                val snippetContent =
+                    assetService.getAsset("snippets", it.id.toString()).block()
+                        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
+
+                translate(it, snippetContent)
+            }
         }
 
-        fun getSnippet(id: Long): Snippet {
+        fun getSnippet(id: Long): SnippetDto {
+            val snippetContent =
+                assetService.getAsset("snippets", id.toString()).block()
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
+
             val snippet =
                 repository.findSnippetById(id)
                     ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
 
-            return snippet
+            return translate(snippet, snippetContent)
         }
 
-        fun createSnippet(snippet: SnippetDto): Snippet {
-            val snippet = translate(snippet)
+        fun createSnippet(snippetDto: CreateSnippetDto): SnippetDto {
+            val snippet = translate(snippetDto)
 
             val validation =
-                printScriptService.validate(ValidateDTO(snippet.content, snippet.version)).block()
+                printScriptService.validate(ValidateDTO(snippetDto.content, snippet.version)).block()
                     ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating snippet")
 
             if (!validation.ok) {
                 throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid snippet")
             }
 
-            return repository.save(snippet)
+            val savedSnippet = repository.save(snippet)
+            assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
+
+            return translate(savedSnippet, snippetDto.content)
         }
 
         @Transactional
@@ -47,12 +63,28 @@ class SnippetService
             return repository.deleteById(id)
         }
 
-        private fun translate(snippet: SnippetDto): Snippet {
+        private fun translate(snippet: CreateSnippetDto): Snippet {
             return Snippet(
-                title = snippet.title,
+                name = snippet.name,
                 description = snippet.description,
+                language = snippet.language,
                 version = snippet.version,
-                content = snippet.content,
+                extension = snippet.extension,
+            )
+        }
+
+        private fun translate(
+            snippet: Snippet,
+            content: String,
+        ): SnippetDto {
+            return SnippetDto(
+                id = snippet.id,
+                name = snippet.name,
+                description = snippet.description,
+                language = snippet.language,
+                version = snippet.version,
+                content = content,
+                extension = snippet.extension,
             )
         }
     }

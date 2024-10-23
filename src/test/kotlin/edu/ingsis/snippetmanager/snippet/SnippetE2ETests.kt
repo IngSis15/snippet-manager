@@ -1,6 +1,9 @@
 package edu.ingsis.snippetmanager.snippet
 
-import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
+import edu.ingsis.snippetmanager.external.MockAssetApiConfiguration
+import edu.ingsis.snippetmanager.external.MockPrintScriptApiConfiguration
+import edu.ingsis.snippetmanager.external.asset.AssetApi
+import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -15,7 +18,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) // starts your spring server in a random port
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
-@Import(MockPrintScriptApiConfiguration::class)
+@Import(MockPrintScriptApiConfiguration::class, MockAssetApiConfiguration::class)
 class SnippetE2ETests {
     @Autowired
     lateinit var client: WebTestClient
@@ -23,9 +26,16 @@ class SnippetE2ETests {
     @Autowired
     lateinit var repository: SnippetRepository
 
+    @Autowired
+    lateinit var assetApi: AssetApi
+
     @BeforeEach
     fun setup() {
-        repository.saveAll(SnippetFixtures.all())
+        val savedSnippets = repository.saveAll(SnippetFixtures.all())
+
+        savedSnippets.forEach {
+            assetApi.createAsset("snippets", it.id.toString(), SnippetFixtures.getContentFromName(it.name)).block()
+        }
     }
 
     @AfterEach
@@ -45,21 +55,29 @@ class SnippetE2ETests {
     @Test
     fun `can get snippet from id`() {
         val snippet = repository.findAll().first()
+        val snippetContent =
+            assetApi.getAsset("snippets", snippet.id.toString()).block()
+                ?: throw IllegalArgumentException("Snippet not found")
+
         client.get().uri("$BASE/${snippet.id}")
             .exchange()
             .expectStatus().isOk
             .expectBody()
-            .jsonPath("$.content").isEqualTo(snippet.content)
+            .jsonPath("$.content").isEqualTo(snippetContent)
+            .jsonPath("$.name").isEqualTo(snippet.name)
+            .jsonPath("$.description").isEqualTo(snippet.description)
     }
 
     @Test
     fun `can create snippet`() {
         val snippet =
-            SnippetDto(
-                title = "Declaration",
+            CreateSnippetDto(
+                name = "Declaration",
                 description = "This snippet declares a variable y",
+                language = "printscript",
                 version = "1.1",
                 content = "let y: number = 10;",
+                extension = "ps",
             )
 
         client.post().uri(BASE)
@@ -80,6 +98,16 @@ class SnippetE2ETests {
         client.get().uri("$BASE/${snippet.id}")
             .exchange()
             .expectStatus().isNotFound
+    }
+
+    private fun translate(snippet: CreateSnippetDto): Snippet {
+        return Snippet(
+            name = snippet.name,
+            description = snippet.description,
+            language = snippet.language,
+            version = snippet.version,
+            extension = snippet.extension,
+        )
     }
 
     companion object {

@@ -10,8 +10,9 @@ class Snippet(
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     var id: Long? = null,
-    val title: String,
+    val name: String,
     val description: String,
+    val language: String,
     val version: String,
-    val content: String,
+    val extension: String,
 )
