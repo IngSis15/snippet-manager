@@ -1,12 +1,14 @@
 package edu.ingsis.snippetmanager.snippet
 
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
+import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 class SnippetRoutes
@@ -32,5 +34,12 @@ class SnippetRoutes
             @PathVariable id: Long,
         ) {
             service.deleteSnippet(id)
+        }
+
+        override fun uploadSnippet(
+            snippet: CreateSnippetFileDto,
+            file: MultipartFile,
+        ): ResponseEntity<SnippetDto> {
+            TODO("Not yet implemented")
         }
     }

@@ -1,6 +1,7 @@
 package edu.ingsis.snippetmanager.snippet
 
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
+import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.multipart.MultipartFile
 
 @RequestMapping("v1/snippet")
 interface SnippetRoutesSpec {
@@ -45,4 +47,11 @@ interface SnippetRoutesSpec {
     fun deleteSnippet(
         @PathVariable id: Long,
     )
+
+    @PostMapping("/upload")
+    @Operation(summary = "Upload snippet")
+    fun uploadSnippet(
+        @RequestBody snippet: CreateSnippetFileDto,
+        @RequestBody file: MultipartFile,
+    ): ResponseEntity<SnippetDto>
 }
