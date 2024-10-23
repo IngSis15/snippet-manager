@@ -40,6 +40,6 @@ class SnippetRoutes
             snippet: CreateSnippetFileDto,
             file: MultipartFile,
         ): ResponseEntity<SnippetDto> {
-            TODO("Not yet implemented")
+            return ResponseEntity.ok(service.createFromFile(snippet, file))
         }
     }

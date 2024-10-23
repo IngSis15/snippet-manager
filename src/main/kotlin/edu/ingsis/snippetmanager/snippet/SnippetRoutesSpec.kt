@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
 
 @RequestMapping("v1/snippet")
@@ -51,7 +52,7 @@ interface SnippetRoutesSpec {
     @PostMapping("/upload")
     @Operation(summary = "Upload snippet")
     fun uploadSnippet(
-        @RequestBody snippet: CreateSnippetFileDto,
-        @RequestBody file: MultipartFile,
+        @RequestPart snippet: CreateSnippetFileDto,
+        @RequestPart file: MultipartFile,
     ): ResponseEntity<SnippetDto>
 }

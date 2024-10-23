@@ -4,11 +4,13 @@ import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateDTO
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
+import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
+import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.server.ResponseStatusException
 
 @Component
@@ -58,6 +60,26 @@ class SnippetService
             return translate(savedSnippet, snippetDto.content)
         }
 
+        fun createFromFile(
+            snippetDto: CreateSnippetFileDto,
+            file: MultipartFile,
+        ): SnippetDto {
+            val snippet = translate(snippetDto)
+
+            val validation =
+                printScriptService.validate(ValidateDTO(file.inputStream.readBytes().toString(), snippet.version)).block()
+                    ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating snippet")
+
+            if (!validation.ok) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid snippet")
+            }
+
+            val savedSnippet = repository.save(snippet)
+            assetService.createAsset("snippets", savedSnippet.id.toString(), file.inputStream.readBytes().toString()).block()
+
+            return translate(savedSnippet, file.inputStream.readBytes().toString())
+        }
+
         @Transactional
         fun deleteSnippet(id: Long) {
             return repository.deleteById(id)
@@ -85,6 +107,16 @@ class SnippetService
                 version = snippet.version,
                 content = content,
                 extension = snippet.extension,
+            )
+        }
+
+        private fun translate(snippetFile: CreateSnippetFileDto): Snippet {
+            return Snippet(
+                name = snippetFile.name,
+                description = snippetFile.description,
+                language = snippetFile.language,
+                version = snippetFile.version,
+                extension = snippetFile.extension,
             )
         }
     }
