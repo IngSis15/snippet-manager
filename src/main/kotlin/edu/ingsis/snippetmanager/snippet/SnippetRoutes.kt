@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
@@ -37,9 +38,25 @@ class SnippetRoutes
         }
 
         override fun uploadSnippet(
-            snippet: CreateSnippetFileDto,
-            file: MultipartFile,
+            @RequestParam name: String,
+            @RequestParam description: String,
+            @RequestParam language: String,
+            @RequestParam version: String,
+            @RequestParam extension: String,
+            @RequestParam file: MultipartFile,
         ): ResponseEntity<SnippetDto> {
-            return ResponseEntity.ok(service.createFromFile(snippet, file))
+            println(file.inputStream.readBytes().toString())
+            return ResponseEntity.ok(
+                service.createFromFile(
+                    CreateSnippetFileDto(
+                        name,
+                        description,
+                        language,
+                        version,
+                        extension,
+                    ),
+                    file,
+                ),
+            )
         }
     }

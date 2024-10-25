@@ -65,9 +65,10 @@ class SnippetService
             file: MultipartFile,
         ): SnippetDto {
             val snippet = translate(snippetDto)
+            val content = file.inputStream.readBytes().toString(Charsets.UTF_8)
 
             val validation =
-                printScriptService.validate(ValidateDTO(file.inputStream.readBytes().toString(), snippet.version)).block()
+                printScriptService.validate(ValidateDTO(content, snippet.version)).block()
                     ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating snippet")
 
             if (!validation.ok) {
@@ -75,9 +76,9 @@ class SnippetService
             }
 
             val savedSnippet = repository.save(snippet)
-            assetService.createAsset("snippets", savedSnippet.id.toString(), file.inputStream.readBytes().toString()).block()
+            assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
 
-            return translate(savedSnippet, file.inputStream.readBytes().toString())
+            return translate(savedSnippet, content)
         }
 
         @Transactional
