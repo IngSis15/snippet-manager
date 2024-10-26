@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ConfigRoutes
-
     @Autowired
     constructor(private val service: ConfigService) : ConfigRoutesSpec {
         override fun getLintingConfig(jwt: Jwt): ResponseEntity<LintingConfigDto> {
@@ -22,14 +21,19 @@ class ConfigRoutes
             return ResponseEntity.ok(service.getFormattingConfig(userId))
         }
 
-        override fun setLintingConfig(jwt: Jwt, config: LintingConfigDto): ResponseEntity<LintingConfigDto> {
+        override fun setLintingConfig(
+            jwt: Jwt,
+            config: LintingConfigDto,
+        ): ResponseEntity<LintingConfigDto> {
             val userId = jwt.subject
             return ResponseEntity.ok(service.setLintingConfig(userId, config))
         }
 
-        override fun setFormattingConfig(jwt: Jwt, config: FormattingConfigDto): ResponseEntity<FormattingConfigDto> {
+        override fun setFormattingConfig(
+            jwt: Jwt,
+            config: FormattingConfigDto,
+        ): ResponseEntity<FormattingConfigDto> {
             val userId = jwt.subject
             return ResponseEntity.ok(service.setFormattingConfig(userId, config))
         }
     }
-
