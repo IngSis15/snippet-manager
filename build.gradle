@@ -52,6 +52,10 @@ dependencies {
 	// Security dependencies
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    testImplementation 'com.auth0:java-jwt:4.4.0'
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    testImplementation("org.springframework.security:spring-security-test")
+
 }
 
 kotlin {
