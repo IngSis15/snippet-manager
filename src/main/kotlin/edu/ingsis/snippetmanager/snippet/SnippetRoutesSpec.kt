@@ -38,6 +38,13 @@ interface SnippetRoutesSpec {
         @RequestBody snippet: CreateSnippetDto,
     ): ResponseEntity<SnippetDto>
 
+    @PostMapping("/{id}")
+    @Operation(summary = "Edit snippet")
+    fun editSnippet(
+        @RequestBody snippet: CreateSnippetDto,
+        @PathVariable id: Long,
+    ): ResponseEntity<SnippetDto>
+
     @DeleteMapping("/{id}")
     @Operation(
         summary = "Delete snippet from id",
@@ -58,5 +65,17 @@ interface SnippetRoutesSpec {
         @RequestParam version: String,
         @RequestParam extension: String,
         @RequestParam file: MultipartFile,
+    ): ResponseEntity<SnippetDto>
+
+    @PostMapping("/upload/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @Operation(summary = "Edit snippet from upload")
+    fun editUploadSnippet(
+        @RequestParam name: String,
+        @RequestParam description: String,
+        @RequestParam language: String,
+        @RequestParam version: String,
+        @RequestParam extension: String,
+        @RequestParam file: MultipartFile,
+        @PathVariable id: Long,
     ): ResponseEntity<SnippetDto>
 }

@@ -32,6 +32,13 @@ class SnippetRoutes
             return ResponseEntity.status(HttpStatus.CREATED).body(service.createSnippet(snippet))
         }
 
+        override fun editSnippet(
+            snippet: CreateSnippetDto,
+            id: Long,
+        ): ResponseEntity<SnippetDto> {
+            return ResponseEntity.ok(service.editSnippet(snippet, id))
+        }
+
         override fun deleteSnippet(
             @PathVariable id: Long,
         ) {
@@ -60,5 +67,29 @@ class SnippetRoutes
                         file,
                     ),
                 )
+        }
+
+        override fun editUploadSnippet(
+            @RequestParam name: String,
+            @RequestParam description: String,
+            @RequestParam language: String,
+            @RequestParam version: String,
+            @RequestParam extension: String,
+            @RequestParam file: MultipartFile,
+            @PathVariable id: Long,
+        ): ResponseEntity<SnippetDto> {
+            return ResponseEntity.ok(
+                service.editFromFile(
+                    CreateSnippetFileDto(
+                        name,
+                        description,
+                        language,
+                        version,
+                        extension,
+                    ),
+                    file,
+                    id,
+                ),
+            )
         }
     }

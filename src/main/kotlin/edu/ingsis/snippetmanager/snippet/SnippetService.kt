@@ -60,6 +60,53 @@ class SnippetService
             return translate(savedSnippet, content)
         }
 
+        fun editSnippet(
+            snippetDto: CreateSnippetDto,
+            id: Long,
+        ): SnippetDto {
+            validateSnippetContent(snippetDto.content, snippetDto.version)
+
+            assetService.createAsset("snippets", id.toString(), snippetDto.content).block()
+
+            val savedSnippet =
+                repository.save(
+                    Snippet(
+                        id,
+                        snippetDto.name,
+                        snippetDto.description,
+                        snippetDto.language,
+                        snippetDto.version,
+                        snippetDto.extension,
+                    ),
+                )
+
+            return translate(savedSnippet, snippetDto.content)
+        }
+
+        fun editFromFile(
+            snippetDto: CreateSnippetFileDto,
+            file: MultipartFile,
+            id: Long,
+        ): SnippetDto {
+            val content = file.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+            validateSnippetContent(content, snippetDto.version)
+
+            val savedSnippet =
+                repository.save(
+                    Snippet(
+                        id,
+                        snippetDto.name,
+                        snippetDto.description,
+                        snippetDto.language,
+                        snippetDto.version,
+                        snippetDto.extension,
+                    ),
+                )
+            assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
+
+            return translate(savedSnippet, content)
+        }
+
         @Transactional
         fun deleteSnippet(id: Long) {
             repository.deleteById(id)
