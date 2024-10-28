@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 
 @RequestMapping("v1/config")
 interface ConfigRoutesSpec {
-    @GetMapping("/get/linting")
+    @GetMapping("/linting")
     @Operation(
         summary = "Get linting configuration for user",
         parameters = [
@@ -25,7 +25,7 @@ interface ConfigRoutesSpec {
         @AuthenticationPrincipal jwt: Jwt,
     ): ResponseEntity<LintingConfigDto>
 
-    @GetMapping("/get/formatting")
+    @GetMapping("/formatting")
     @Operation(
         summary = "Get formatting configuration for user",
         parameters = [
@@ -36,7 +36,7 @@ interface ConfigRoutesSpec {
         @AuthenticationPrincipal jwt: Jwt,
     ): ResponseEntity<FormattingConfigDto>
 
-    @PutMapping("/set/linting")
+    @PutMapping("/linting")
     @Operation(
         summary = "Set linting configuration for user",
         parameters = [
@@ -48,7 +48,7 @@ interface ConfigRoutesSpec {
         @RequestBody config: LintingConfigDto,
     ): ResponseEntity<LintingConfigDto>
 
-    @PutMapping("/set/formatting")
+    @PutMapping("/formatting")
     @Operation(
         summary = "Set formatting configuration for user",
         parameters = [

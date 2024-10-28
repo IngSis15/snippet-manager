@@ -47,7 +47,7 @@ class ConfigE2ETests
             val lintingConfig = LintingConfigDto(camelCase = true, expressionAllowedInPrint = true, expressionAllowedInReadInput = false)
             `when`(configService.getLintingConfig("test-user")).thenReturn(lintingConfig)
 
-            mockMvc.get("/v1/config/get/linting") {
+            mockMvc.get("/v1/config/linting") {
                 with(jwt().jwt(jwtToken))
             }
                 .andExpect {
@@ -71,7 +71,7 @@ class ConfigE2ETests
                 )
             `when`(configService.getFormattingConfig("test-user")).thenReturn(formattingConfig)
 
-            mockMvc.get("/v1/config/get/formatting") {
+            mockMvc.get("/v1/config/formatting") {
                 with(jwt().jwt(jwtToken))
             }
                 .andExpect {
@@ -90,7 +90,7 @@ class ConfigE2ETests
             val lintingConfig = LintingConfigDto(camelCase = false, expressionAllowedInPrint = true, expressionAllowedInReadInput = true)
             `when`(configService.setLintingConfig("test-user", lintingConfig)).thenReturn(lintingConfig)
 
-            mockMvc.put("/v1/config/set/linting") {
+            mockMvc.put("/v1/config/linting") {
                 contentType = MediaType.APPLICATION_JSON
                 content = objectMapper.writeValueAsString(lintingConfig)
                 with(jwt().jwt(jwtToken))
@@ -115,7 +115,7 @@ class ConfigE2ETests
                 )
             `when`(configService.setFormattingConfig("test-user", formattingConfig)).thenReturn(formattingConfig)
 
-            mockMvc.put("/v1/config/set/formatting") {
+            mockMvc.put("/v1/config/formatting") {
                 contentType = MediaType.APPLICATION_JSON
                 content = objectMapper.writeValueAsString(formattingConfig)
                 with(jwt().jwt(jwtToken))
