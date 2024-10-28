@@ -4,11 +4,13 @@ import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateDTO
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
+import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
+import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.server.ResponseStatusException
 
 @Component
@@ -20,71 +22,94 @@ class SnippetService
         private val assetService: AssetApi,
     ) {
         fun getAllSnippets(): List<SnippetDto> {
-            return repository.findAll().map {
-                val snippetContent =
-                    assetService.getAsset("snippets", it.id.toString()).block()
-                        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
-
-                translate(it, snippetContent)
+            return repository.findAll().map { snippet ->
+                val content = fetchSnippetContent(snippet.id!!)
+                translate(snippet, content)
             }
         }
 
         fun getSnippet(id: Long): SnippetDto {
-            val snippetContent =
-                assetService.getAsset("snippets", id.toString()).block()
-                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
-
             val snippet =
                 repository.findSnippetById(id)
                     ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
-
-            return translate(snippet, snippetContent)
+            val content = fetchSnippetContent(id)
+            return translate(snippet, content)
         }
 
         fun createSnippet(snippetDto: CreateSnippetDto): SnippetDto {
+            validateSnippetContent(snippetDto.content, snippetDto.version)
+
             val snippet = translate(snippetDto)
-
-            val validation =
-                printScriptService.validate(ValidateDTO(snippetDto.content, snippet.version)).block()
-                    ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating snippet")
-
-            if (!validation.ok) {
-                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid snippet")
-            }
-
             val savedSnippet = repository.save(snippet)
             assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
 
             return translate(savedSnippet, snippetDto.content)
         }
 
-        @Transactional
-        fun deleteSnippet(id: Long) {
-            return repository.deleteById(id)
+        fun createFromFile(
+            snippetDto: CreateSnippetFileDto,
+            file: MultipartFile,
+        ): SnippetDto {
+            val content = file.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+            validateSnippetContent(content, snippetDto.version)
+
+            val snippet = translate(snippetDto)
+            val savedSnippet = repository.save(snippet)
+            assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
+
+            return translate(savedSnippet, content)
         }
 
-        private fun translate(snippet: CreateSnippetDto): Snippet {
-            return Snippet(
-                name = snippet.name,
-                description = snippet.description,
-                language = snippet.language,
-                version = snippet.version,
-                extension = snippet.extension,
-            )
+        @Transactional
+        fun deleteSnippet(id: Long) {
+            repository.deleteById(id)
         }
+
+        private fun fetchSnippetContent(id: Long): String {
+            return assetService.getAsset("snippets", id.toString()).block()
+                ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet content not found")
+        }
+
+        private fun validateSnippetContent(
+            content: String,
+            version: String,
+        ) {
+            val validation =
+                printScriptService.validate(ValidateDTO(content, version)).block()
+                    ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating snippet")
+            if (!validation.ok) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid snippet content")
+            }
+        }
+
+        private fun translate(snippetDto: CreateSnippetDto) =
+            Snippet(
+                name = snippetDto.name,
+                description = snippetDto.description,
+                language = snippetDto.language,
+                version = snippetDto.version,
+                extension = snippetDto.extension,
+            )
+
+        private fun translate(snippetFileDto: CreateSnippetFileDto) =
+            Snippet(
+                name = snippetFileDto.name,
+                description = snippetFileDto.description,
+                language = snippetFileDto.language,
+                version = snippetFileDto.version,
+                extension = snippetFileDto.extension,
+            )
 
         private fun translate(
             snippet: Snippet,
             content: String,
-        ): SnippetDto {
-            return SnippetDto(
-                id = snippet.id,
-                name = snippet.name,
-                description = snippet.description,
-                language = snippet.language,
-                version = snippet.version,
-                content = content,
-                extension = snippet.extension,
-            )
-        }
+        ) = SnippetDto(
+            id = snippet.id,
+            name = snippet.name,
+            description = snippet.description,
+            language = snippet.language,
+            version = snippet.version,
+            content = content,
+            extension = snippet.extension,
+        )
     }
