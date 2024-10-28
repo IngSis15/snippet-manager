@@ -83,7 +83,7 @@ class SnippetE2ETests {
         client.post().uri(BASE)
             .bodyValue(snippet)
             .exchange()
-            .expectStatus().isOk
+            .expectStatus().isCreated
             .expectBody()
             .jsonPath("$.content").isEqualTo("let y: number = 10;")
     }
@@ -98,16 +98,6 @@ class SnippetE2ETests {
         client.get().uri("$BASE/${snippet.id}")
             .exchange()
             .expectStatus().isNotFound
-    }
-
-    private fun translate(snippet: CreateSnippetDto): Snippet {
-        return Snippet(
-            name = snippet.name,
-            description = snippet.description,
-            language = snippet.language,
-            version = snippet.version,
-            extension = snippet.extension,
-        )
     }
 
     companion object {
