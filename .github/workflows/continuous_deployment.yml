@@ -45,13 +45,29 @@ jobs:
           tags: |
             ghcr.io/ingsis15/snippet-manager:dev
 
-  deploy:
+  deploy_dev:
+    name: Deploy to dev VM
+    if: github.ref == 'refs/heads/dev'
     needs: push_to_registry
-    runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
     uses: IngSis15/infra/.github/workflows/deploy.yml@main
     with:
-      environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+      environment: 'dev'
+    secrets:
+      vm_resource_group: ${{ secrets.DEV_VM_RESOURCE_GROUP }}
+      vm_name: ${{ secrets.DEV_VM_NAME }}
+      vm_username: ${{ secrets.DEV_VM_USERNAME }}
+      vm_ip: ${{ secrets.DEV_VM_IP }}
+      ssh_key: ${{ secrets.DEV_SSH_KEY }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
+
+  deploy_prod:
+    name: Deploy to prod VM
+    if: github.ref == 'refs/heads/main'
+    needs: push_to_registry
+    uses: IngSis15/infra/.github/workflows/deploy.yml@main
+    with:
+      environment: 'prod'
     secrets:
       vm_resource_group: ${{ secrets.VM_RESOURCE_GROUP }}
       vm_name: ${{ secrets.VM_NAME }}
