@@ -5,7 +5,7 @@ on:
 
 jobs:
   deploy:
-    uses: IngSis15/infra/.github/workflows/deploy-service.yml@main
+    uses: IngSis15/infra/.github/workflows/deploy.yml@main
     with:
       environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
     secrets:
