@@ -8,17 +8,13 @@ data class Test(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-
     @ManyToOne
     @JoinColumn(name = "snippet_id", nullable = false)
     val snippet: Snippet,
-
     @Column(nullable = false)
     val expectedOutput: String,
-
     @Column(nullable = false)
     val userInput: String,
-
     @ElementCollection
-    val environmentVariables: Map<String, String> = emptyMap()
+    val environmentVariables: Map<String, String> = emptyMap(),
 )

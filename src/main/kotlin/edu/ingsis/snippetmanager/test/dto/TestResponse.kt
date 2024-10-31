@@ -4,5 +4,5 @@ data class TestResponse(
     val id: Long,
     val expectedOutput: String,
     val userInput: String,
-    val environmentVariables: Map<String, String>
+    val environmentVariables: Map<String, String>,
 )

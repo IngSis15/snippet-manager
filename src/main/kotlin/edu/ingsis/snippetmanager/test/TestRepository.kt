@@ -7,4 +7,3 @@ import org.springframework.stereotype.Repository
 interface TestRepository : JpaRepository<Test, Long> {
     fun findBySnippetId(snippetId: Long): List<Test>
 }
-

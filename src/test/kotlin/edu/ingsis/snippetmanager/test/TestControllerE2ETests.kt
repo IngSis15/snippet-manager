@@ -7,18 +7,17 @@ import edu.ingsis.snippetmanager.test.dto.UpdateTestDTO
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.test.web.reactive.server.WebTestClient
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
 class TestControllerE2ETests {
-
     @Autowired
     lateinit var client: WebTestClient
 
@@ -30,22 +29,24 @@ class TestControllerE2ETests {
 
     @BeforeEach
     fun setup() {
-        val snippet = Snippet(
-            name = "Test Snippet",
-            description = "A snippet for testing",
-            language = "printscript",
-            version = "1.1",
-            extension = "ps"
-        )
+        val snippet =
+            Snippet(
+                name = "Test Snippet",
+                description = "A snippet for testing",
+                language = "printscript",
+                version = "1.1",
+                extension = "ps",
+            )
 
         val savedSnippet = snippetRepository.save(snippet)
 
-        val test = Test(
-            snippet = savedSnippet,
-            expectedOutput = "Expected Output",
-            userInput = "User Input",
-            environmentVariables = mapOf("ENV_VAR" to "value")
-        )
+        val test =
+            Test(
+                snippet = savedSnippet,
+                expectedOutput = "Expected Output",
+                userInput = "User Input",
+                environmentVariables = mapOf("ENV_VAR" to "value"),
+            )
 
         val savedTest = testRepository.save(test)
 
@@ -61,12 +62,13 @@ class TestControllerE2ETests {
     fun `should create Test`() {
         val snippetId = 1L
 
-        val dto = CreateTestDTO(
-            snippetId = snippetId,
-            expectedOutput = "Expected Output",
-            userInput = "User Input",
-            environmentVariables = mapOf("ENV_VAR" to "value")
-        )
+        val dto =
+            CreateTestDTO(
+                snippetId = snippetId,
+                expectedOutput = "Expected Output",
+                userInput = "User Input",
+                environmentVariables = mapOf("ENV_VAR" to "value"),
+            )
 
         client.post().uri(BASE)
             .bodyValue(dto)
@@ -80,11 +82,12 @@ class TestControllerE2ETests {
     @Test
     fun `should update Test`() {
         val test = testRepository.findAll().first()
-        val dto = UpdateTestDTO(
-            expectedOutput = "Updated Expected Output",
-            userInput = "Updated User Input",
-            environmentVariables = mapOf("NEW_ENV_VAR" to "new_value")
-        )
+        val dto =
+            UpdateTestDTO(
+                expectedOutput = "Updated Expected Output",
+                userInput = "Updated User Input",
+                environmentVariables = mapOf("NEW_ENV_VAR" to "new_value"),
+            )
 
         client.put().uri("$BASE/${test.id}")
             .bodyValue(dto)
