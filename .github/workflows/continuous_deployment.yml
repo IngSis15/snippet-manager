@@ -8,7 +8,7 @@ on:
 
 jobs:
   publish_docker_image:
-    uses: ./.github/workflows/publish_docker_image.yml@v1
+    uses: ./.github/workflows/publish_docker_image.yml
 
   update_vm:
-    uses: ./.github/workflows/deploy.yml@v1
+    uses: ./.github/workflows/deploy.yml
