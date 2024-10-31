@@ -47,8 +47,6 @@ jobs:
 
   deploy:
     needs: push_to_registry
-    runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
     uses: IngSis15/infra/.github/workflows/deploy.yml@main
     with:
       environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
