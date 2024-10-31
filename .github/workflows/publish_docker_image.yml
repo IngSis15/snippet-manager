@@ -1,9 +1,7 @@
 name: Publish Docker image to GitHub Packages
 on:
-  push:
-    branches:
-      - main
-      - dev
+   workflow_call:
+
 jobs:
   push_to_registry:
     name: Push Docker image to GitHub Packages
