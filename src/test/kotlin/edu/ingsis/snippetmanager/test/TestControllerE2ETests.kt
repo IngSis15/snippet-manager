@@ -60,23 +60,27 @@ class TestControllerE2ETests {
 
     @Test
     fun `should create Test`() {
-        val snippetId = 1L
+        val snippetId = snippetRepository.findAll().first().id
 
         val dto =
-            CreateTestDTO(
-                snippetId = snippetId,
-                expectedOutput = "Expected Output",
-                userInput = "User Input",
-                environmentVariables = mapOf("ENV_VAR" to "value"),
-            )
+            snippetId?.let {
+                CreateTestDTO(
+                    snippetId = it,
+                    expectedOutput = "Expected Output",
+                    userInput = "User Input",
+                    environmentVariables = mapOf("ENV_VAR" to "value"),
+                )
+            }
 
-        client.post().uri(BASE)
-            .bodyValue(dto)
-            .exchange()
-            .expectStatus().isCreated
-            .expectBody()
-            .jsonPath("$.snippet.id").isEqualTo(snippetId) // Cambia esto si 'snippet' tiene un campo 'id'
-            .jsonPath("$.expectedOutput").isEqualTo(dto.expectedOutput)
+        if (dto != null) {
+            client.post().uri(BASE)
+                .bodyValue(dto)
+                .exchange()
+                .expectStatus().isCreated
+                .expectBody()
+                .jsonPath("$.snippet.id").isEqualTo(snippetId)
+                .jsonPath("$.expectedOutput").isEqualTo(dto.expectedOutput)
+        }
     }
 
     @Test
@@ -112,6 +116,6 @@ class TestControllerE2ETests {
     }
 
     companion object {
-        private const val BASE = "/api/tests"
+        private const val BASE = "/v1/tests"
     }
 }
