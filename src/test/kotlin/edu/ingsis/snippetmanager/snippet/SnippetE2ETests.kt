@@ -100,6 +100,28 @@ class SnippetE2ETests {
             .expectStatus().isNotFound
     }
 
+    @Test
+    fun `can edit snippet`() {
+        val snippet = repository.findAll().first()
+
+        val editedSnippet =
+            CreateSnippetDto(
+                name = snippet.name,
+                description = snippet.description,
+                language = snippet.language,
+                version = snippet.version,
+                extension = snippet.extension,
+                content = "let a: number = 1;",
+            )
+
+        client.post().uri("$BASE/${snippet.id}")
+            .bodyValue(editedSnippet)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.content").isEqualTo("let a: number = 1;")
+    }
+
     companion object {
         private const val BASE = "/v1/snippet"
     }
