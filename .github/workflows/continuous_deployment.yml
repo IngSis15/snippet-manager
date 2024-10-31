@@ -1,0 +1,14 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  publish_docker_image:
+    uses: ./publish_docker_image.yml
+
+  update_vm:
+    uses: ./deploy.yml

@@ -1,10 +1,7 @@
 name: Deploy Service
 
 on:
-  workflow_run:
-    workflows: ["Publish Docker image to GitHub Packages"]
-    types:
-      - completed
+  workflow_call:
 
 jobs:
   deploy:
