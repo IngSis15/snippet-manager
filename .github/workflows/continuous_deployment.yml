@@ -49,7 +49,7 @@ jobs:
     needs: push_to_registry
     uses: IngSis15/infra/.github/workflows/deploy.yml@main
     with:
-      environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+      environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
     secrets:
       vm_resource_group: ${{ secrets.VM_RESOURCE_GROUP }}
       vm_name: ${{ secrets.VM_NAME }}
