@@ -8,7 +8,7 @@ on:
 
 jobs:
   publish_docker_image:
-    uses: ./publish_docker_image.yml
+    uses: ./publish_docker_image.yml@v1
 
   update_vm:
-    uses: ./deploy.yml
+    uses: ./deploy.yml@v1
