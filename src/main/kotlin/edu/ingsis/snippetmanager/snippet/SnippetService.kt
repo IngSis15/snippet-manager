@@ -3,6 +3,7 @@ package edu.ingsis.snippetmanager.snippet
 import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateDTO
+import edu.ingsis.snippetmanager.redis.lint.LintSnippetProducer
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
@@ -20,6 +21,7 @@ class SnippetService
         private val repository: SnippetRepository,
         private val printScriptService: PrintScriptApi,
         private val assetService: AssetApi,
+        private val lintSnippetProducer: LintSnippetProducer,
     ) {
         fun getAllSnippets(): List<SnippetDto> {
             return repository.findAll().map { snippet ->
