@@ -31,7 +31,10 @@ class SnippetService
             }
         }
 
-        fun getSnippet(id: Long, jwt: Jwt): SnippetDto {
+        fun getSnippet(
+            id: Long,
+            jwt: Jwt,
+        ): SnippetDto {
             val permission = permissionService.checkPermission(jwt, id)
             if (permission == null) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
@@ -43,7 +46,10 @@ class SnippetService
             return translate(snippet, content, permission.permissionType)
         }
 
-        fun createSnippet(snippetDto: CreateSnippetDto, jwt: Jwt): SnippetDto {
+        fun createSnippet(
+            snippetDto: CreateSnippetDto,
+            jwt: Jwt,
+        ): SnippetDto {
             validateSnippetContent(snippetDto.content, snippetDto.version)
 
             val snippet = translate(snippetDto)
@@ -56,7 +62,7 @@ class SnippetService
         fun createFromFile(
             snippetDto: CreateSnippetFileDto,
             file: MultipartFile,
-            jwt: Jwt
+            jwt: Jwt,
         ): SnippetDto {
             val content = file.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
             validateSnippetContent(content, snippetDto.version)
@@ -124,7 +130,10 @@ class SnippetService
         }
 
         @Transactional
-        fun deleteSnippet(id: Long, jwt: Jwt) {
+        fun deleteSnippet(
+            id: Long,
+            jwt: Jwt,
+        ) {
             val permission = permissionService.checkPermission(jwt, id)
             if (permission == null || permission.permissionType != "owner") {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
@@ -154,8 +163,9 @@ class SnippetService
         fun getSnippetsByUser(jwt: Jwt): List<SnippetDto> {
             val permissions = permissionService.getAllSnippetPermissions(jwt)
             return permissions.map { permission ->
-                val snippet = repository.findSnippetById(permission.snippetId)
-                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
+                val snippet =
+                    repository.findSnippetById(permission.snippetId)
+                        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
                 val content = fetchSnippetContent(permission.snippetId)
                 translate(snippet, content, permission.permissionType)
             }
@@ -179,7 +189,11 @@ class SnippetService
                 extension = snippetFileDto.extension,
             )
 
-        private fun translate(snippet: Snippet, content: String, permission: String) = SnippetDto(
+        private fun translate(
+            snippet: Snippet,
+            content: String,
+            permission: String,
+        ) = SnippetDto(
             id = snippet.id,
             name = snippet.name,
             description = snippet.description,
@@ -187,6 +201,6 @@ class SnippetService
             version = snippet.version,
             content = content,
             extension = snippet.extension,
-            permission = permission
+            permission = permission,
         )
     }

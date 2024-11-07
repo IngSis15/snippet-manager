@@ -7,7 +7,9 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 
 @Component
-class PermissionService(@Value("\${services.permission.url") private val baseUrl: String) : PermissionApi {
+class PermissionService(
+    @Value("\${services.permission.url") private val baseUrl: String,
+) : PermissionApi {
     lateinit var webClient: WebClient
 
     override fun getAllSnippetPermissions(jwt: Jwt): List<PermissionResponseDTO> {
@@ -18,24 +20,30 @@ class PermissionService(@Value("\${services.permission.url") private val baseUrl
             .bodyToFlux(PermissionResponseDTO::class.java)
             .collectList()
             .block() ?: emptyList()
-
     }
 
-
-    override fun checkPermission(jwt: Jwt, snippetId: Long): PermissionResponseDTO? {
+    override fun checkPermission(
+        jwt: Jwt,
+        snippetId: Long,
+    ): PermissionResponseDTO? {
         return webClient.get()
             .uri("/permissions/user/snippet/{snippetId}", snippetId)
             .headers { it.setBearerAuth(jwt.toString()) }
             .retrieve()
             .bodyToMono(PermissionResponseDTO::class.java)
-            .block() ?: PermissionResponseDTO("permission_id",jwt.subject, snippetId, "permission_type")
-        }
+            .block() ?: PermissionResponseDTO("permission_id", jwt.subject, snippetId, "permission_type")
+    }
 
-    override fun addPermission(jwt: Jwt, snippetId: Long, permission: String): Boolean {
-        val requestBody = mapOf(
-            "snippetId" to snippetId,
-            "permissionType" to permission
-        )
+    override fun addPermission(
+        jwt: Jwt,
+        snippetId: Long,
+        permission: String,
+    ): Boolean {
+        val requestBody =
+            mapOf(
+                "snippetId" to snippetId,
+                "permissionType" to permission,
+            )
 
         return webClient.post()
             .uri("/permissions/user/snippet/{snippetId}/add", snippetId)
@@ -46,11 +54,16 @@ class PermissionService(@Value("\${services.permission.url") private val baseUrl
             .block() ?: false
     }
 
-    override fun removePermission(jwt: Jwt, snippetId: Long, permission: String): Boolean {
-        val requestBody = mapOf(
-            "snippetId" to snippetId,
-            "permissionType" to permission
-        )
+    override fun removePermission(
+        jwt: Jwt,
+        snippetId: Long,
+        permission: String,
+    ): Boolean {
+        val requestBody =
+            mapOf(
+                "snippetId" to snippetId,
+                "permissionType" to permission,
+            )
 
         return webClient.delete()
             .uri("/permissions/user/snippet/{snippetId}/remove", snippetId)
@@ -59,5 +72,4 @@ class PermissionService(@Value("\${services.permission.url") private val baseUrl
             .bodyToMono(Boolean::class.java)
             .block() ?: false
     }
-
 }

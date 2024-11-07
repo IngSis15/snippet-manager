@@ -72,7 +72,7 @@ class SnippetRoutes
                             extension,
                         ),
                         file,
-                        jwt
+                        jwt,
                     ),
                 )
         }
@@ -98,12 +98,12 @@ class SnippetRoutes
                     ),
                     file,
                     id,
-                    jwt
+                    jwt,
                 ),
             )
         }
 
-    override fun getSnippetsByUser(jwt: Jwt): ResponseEntity<List<SnippetDto>> {
-        return ResponseEntity.ok(service.getSnippetsByUser(jwt))
+        override fun getSnippetsByUser(jwt: Jwt): ResponseEntity<List<SnippetDto>> {
+            return ResponseEntity.ok(service.getSnippetsByUser(jwt))
+        }
     }
-}
