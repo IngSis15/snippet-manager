@@ -11,7 +11,4 @@ class LintingConfig(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
     val userId: String,
-    var camelCase: Boolean,
-    var expressionAllowedInPrint: Boolean,
-    var expressionAllowedInReadInput: Boolean,
 )

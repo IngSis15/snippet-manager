@@ -1,7 +1,7 @@
 package edu.ingsis.snippetmanager.config
 
-import edu.ingsis.snippetmanager.config.dto.FormattingConfigDto
-import edu.ingsis.snippetmanager.config.dto.LintingConfigDto
+import edu.ingsis.snippetmanager.config.configSchemas.FormattingSchemaDTO
+import edu.ingsis.snippetmanager.config.configSchemas.LintingSchemaDTO
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.http.ResponseEntity
@@ -23,7 +23,7 @@ interface ConfigRoutesSpec {
     )
     fun getLintingConfig(
         @AuthenticationPrincipal jwt: Jwt,
-    ): ResponseEntity<LintingConfigDto>
+    ): ResponseEntity<LintingSchemaDTO>
 
     @GetMapping("/formatting")
     @Operation(
@@ -34,7 +34,7 @@ interface ConfigRoutesSpec {
     )
     fun getFormattingConfig(
         @AuthenticationPrincipal jwt: Jwt,
-    ): ResponseEntity<FormattingConfigDto>
+    ): ResponseEntity<FormattingSchemaDTO>
 
     @PutMapping("/linting")
     @Operation(
@@ -45,8 +45,8 @@ interface ConfigRoutesSpec {
     )
     fun setLintingConfig(
         @AuthenticationPrincipal jwt: Jwt,
-        @RequestBody config: LintingConfigDto,
-    ): ResponseEntity<LintingConfigDto>
+        @RequestBody config: LintingSchemaDTO,
+    ): ResponseEntity<LintingSchemaDTO>
 
     @PutMapping("/formatting")
     @Operation(
@@ -58,6 +58,6 @@ interface ConfigRoutesSpec {
     )
     fun setFormattingConfig(
         @AuthenticationPrincipal jwt: Jwt,
-        @RequestBody config: FormattingConfigDto,
-    ): ResponseEntity<FormattingConfigDto>
+        @RequestBody config: FormattingSchemaDTO,
+    ): ResponseEntity<FormattingSchemaDTO>
 }
