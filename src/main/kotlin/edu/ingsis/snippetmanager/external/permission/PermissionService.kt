@@ -1,44 +1,49 @@
 package edu.ingsis.snippetmanager.external.permission
 
 import edu.ingsis.snippetmanager.external.permission.dto.PermissionResponseDTO
+import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Component
 class PermissionService(
-    @Value("\${services.permission.url") private val baseUrl: String,
+    @Value("\${services.permission.url}") val baseUrl: String,
 ) : PermissionApi {
     lateinit var webClient: WebClient
 
-    override fun getAllSnippetPermissions(jwt: Jwt): List<PermissionResponseDTO> {
+    @PostConstruct
+    fun init() {
+        webClient = WebClient.create(baseUrl)
+    }
+
+    override fun getAllSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO> {
         return webClient.get()
-            .uri("/permissions/user")
-            .headers { it.setBearerAuth(jwt.toString()) }
+            .uri("/all/user")
+            .headers { it.setBearerAuth(jwt.tokenValue) }
             .retrieve()
             .bodyToFlux(PermissionResponseDTO::class.java)
-            .collectList()
-            .block() ?: emptyList()
     }
 
     override fun checkPermission(
         jwt: Jwt,
         snippetId: Long,
-    ): PermissionResponseDTO? {
+    ): Mono<PermissionResponseDTO> {
         return webClient.get()
-            .uri("/permissions/user/snippet/{snippetId}", snippetId)
-            .headers { it.setBearerAuth(jwt.toString()) }
+            .uri("/permissions/user/snippet/$snippetId")
+            .headers { it.setBearerAuth(jwt.tokenValue) }
             .retrieve()
             .bodyToMono(PermissionResponseDTO::class.java)
-            .block() ?: PermissionResponseDTO("permission_id", jwt.subject, snippetId, "permission_type")
     }
 
     override fun addPermission(
         jwt: Jwt,
         snippetId: Long,
         permission: String,
-    ): Boolean {
+    ): Mono<PermissionResponseDTO> {
         val requestBody =
             mapOf(
                 "snippetId" to snippetId,
@@ -46,19 +51,18 @@ class PermissionService(
             )
 
         return webClient.post()
-            .uri("/permissions/user/snippet/{snippetId}/add", snippetId)
+            .uri("/permissions/assign", snippetId)
             .headers { it.setBearerAuth(jwt.tokenValue) }
             .bodyValue(requestBody)
             .retrieve()
-            .bodyToMono(Boolean::class.java)
-            .block() ?: false
+            .bodyToMono(PermissionResponseDTO::class.java)
     }
 
     override fun removePermission(
         jwt: Jwt,
         snippetId: Long,
         permission: String,
-    ): Boolean {
+    ): Mono<PermissionResponseDTO> {
         val requestBody =
             mapOf(
                 "snippetId" to snippetId,
@@ -69,7 +73,6 @@ class PermissionService(
             .uri("/permissions/user/snippet/{snippetId}/remove", snippetId)
             .headers { it.setBearerAuth(jwt.tokenValue) }
             .retrieve()
-            .bodyToMono(Boolean::class.java)
-            .block() ?: false
+            .bodyToMono(PermissionResponseDTO::class.java)
     }
 }
