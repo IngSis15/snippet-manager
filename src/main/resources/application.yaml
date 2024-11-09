@@ -12,6 +12,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+    properties:
+        hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+
   security:
     oauth2:
       resourceserver:
@@ -41,9 +45,5 @@ services:
     url: ${PRINTSCRIPT_HOST:http://localhost:9090}
   asset:
     url: ${ASSET_HOST:http://localhost:8081}
-
-stream:
-  key: "linting"
-
-groups:
-  snippet: "lintsnippet"
+  permission:
+    url: ${PERMISSION_HOST:http://localhost:8082}
