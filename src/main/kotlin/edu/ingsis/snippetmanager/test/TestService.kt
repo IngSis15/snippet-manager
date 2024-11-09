@@ -15,42 +15,32 @@ class TestService(
 ) {
     fun getTestById(id: Long): Test {
         return testRepository.findById(id)
-            .map { it.apply { environmentVariables } }
             .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "Test not found with id $id") }
     }
 
     @Transactional
     fun createTest(dto: CreateTestDTO): Test {
-        val snippet =
-            snippetRepository.findById(dto.snippetId)
-                .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found") }
+        val snippet = snippetRepository.findSnippetById(dto.snippetId)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
 
-        val test =
-            Test(
-                snippet = snippet,
-                expectedOutput = dto.expectedOutput,
-                userInput = dto.userInput,
-                environmentVariables = dto.environmentVariables,
-            )
+        val test = Test(
+            snippet = snippet,
+            expectedOutput = dto.expectedOutput,
+            userInput = dto.userInput
+        )
 
         return testRepository.save(test)
     }
 
     @Transactional
-    fun updateTest(
-        id: Long,
-        dto: UpdateTestDTO,
-    ): Test {
-        val test =
-            testRepository.findById(id)
-                .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "Test not found") }
+    fun updateTest(id: Long, dto: UpdateTestDTO): Test {
+        val test = testRepository.findById(id)
+            .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "Test not found") }
 
-        val updatedTest =
-            test.copy(
-                expectedOutput = dto.expectedOutput,
-                userInput = dto.userInput,
-                environmentVariables = dto.environmentVariables,
-            )
+        val updatedTest = test.copy(
+            expectedOutput = dto.expectedOutput,
+            userInput = dto.userInput,
+        )
 
         return testRepository.save(updatedTest)
     }

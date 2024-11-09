@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface TestRepository : JpaRepository<Test, Long> {
-    fun findBySnippetId(snippetId: Long): List<Test>
+    fun findBySnippetId(snippetId: Long): List<Test>?
 }
