@@ -18,8 +18,8 @@ import org.springframework.web.multipart.MultipartFile
 class SnippetRoutes
     @Autowired
     constructor(private val service: SnippetService) : SnippetRoutesSpec {
-        override fun getAllSnippets(jwt: Jwt): ResponseEntity<List<SnippetDto>> {
-            return ResponseEntity.ok(service.getSnippetsByUser(jwt))
+        override fun getAllSnippets(): ResponseEntity<List<SnippetDto>> {
+            return ResponseEntity.ok(service.getAllSnippets())
         }
 
         override fun getSnippet(

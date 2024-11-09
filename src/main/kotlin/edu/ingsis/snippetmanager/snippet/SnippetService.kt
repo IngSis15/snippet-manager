@@ -28,14 +28,14 @@ class SnippetService
             id: Long,
             jwt: Jwt,
         ): SnippetDto {
-            val permission =
-                permissionService.checkPermission(jwt, id).block()
-                    ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
-            val snippet =
-                repository.findSnippetById(id)
-                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
+            val canRead = permissionService.canRead(jwt, id).block() ?: false
+            if (!canRead) {
+                throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
+            }
+            val snippet = repository.findSnippetById(id)
+                ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
             val content = fetchSnippetContent(id)
-            return translate(snippet, content, permission.permissionType)
+            return translate(snippet, content, "READ")
         }
 
         fun createSnippet(
@@ -47,7 +47,7 @@ class SnippetService
             val snippet = translate(snippetDto)
             val savedSnippet = repository.save(snippet)
             assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
-            savedSnippet.id?.let { permissionService.addPermission(jwt, it, "OWNER") }
+            permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()
             return translate(savedSnippet, snippetDto.content, "OWNER")
         }
 
@@ -71,8 +71,8 @@ class SnippetService
             jwt: Jwt,
         ): SnippetDto {
             validateSnippetContent(snippetDto.content, snippetDto.version)
-            val permission = permissionService.checkPermission(jwt, id).block()
-            if (permission == null || permission.permissionType != "owner") {
+            val canModify = permissionService.canModify(jwt, id).block() ?: false
+            if (!canModify) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
 
@@ -90,7 +90,7 @@ class SnippetService
                     ),
                 )
 
-            return translate(savedSnippet, snippetDto.content, permission.permissionType)
+            return translate(savedSnippet, snippetDto.content, "OWNER")
         }
 
         fun editFromFile(
@@ -101,10 +101,11 @@ class SnippetService
         ): SnippetDto {
             val content = file.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
             validateSnippetContent(content, snippetDto.version)
-            val permission = permissionService.checkPermission(jwt, id).block()
-            if (permission == null || permission.permissionType != "owner") {
+            val canModify = permissionService.canModify(jwt, id).block() ?: false
+            if (!canModify) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
+
             val savedSnippet =
                 repository.save(
                     Snippet(
@@ -118,7 +119,7 @@ class SnippetService
                 )
             assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
 
-            return translate(savedSnippet, content, permission.permissionType)
+            return translate(savedSnippet, content, "OWNER")
         }
 
         @Transactional
@@ -126,12 +127,12 @@ class SnippetService
             id: Long,
             jwt: Jwt,
         ) {
-            val permission = permissionService.checkPermission(jwt, id).block()
-            if (permission == null || permission.permissionType != "owner") {
+            val canModify = permissionService.canModify(jwt, id).block() ?: false
+            if (!canModify) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
             repository.deleteById(id)
-            permissionService.removePermission(jwt, id, permission.permissionType).block()
+            permissionService.removePermission(jwt, id, "OWNER").block()
             assetService.deleteAsset("snippets", id.toString()).block()
         }
 
@@ -160,6 +161,13 @@ class SnippetService
                         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
                 val content = fetchSnippetContent(permission.snippetId)
                 translate(snippet, content, permission.permissionType)
+            }
+        }
+
+        fun getAllSnippets(): List<SnippetDto> {
+            return repository.findAll().map {
+                val content = fetchSnippetContent(it.id!!)
+                translate(it, content, "READ")
             }
         }
 

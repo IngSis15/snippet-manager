@@ -10,7 +10,7 @@ class PermissionApiConfiguration {
     @Bean
     @Profile("!test")
     fun permissionApi(
-        @Value("\${services.permission.url}") baseUrl: String,
+        @Value("localhos") baseUrl: String,
     ): PermissionApi {
         return PermissionService(baseUrl)
     }

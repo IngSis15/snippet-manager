@@ -8,10 +8,15 @@ import reactor.core.publisher.Mono
 interface PermissionApi {
     fun getAllSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO>
 
-    fun checkPermission(
+    fun canRead(
         jwt: Jwt,
         snippetId: Long,
-    ): Mono<PermissionResponseDTO>
+    ): Mono<Boolean>
+
+    fun canModify(
+        jwt: Jwt,
+        snippetId: Long,
+    ): Mono<Boolean>
 
     fun addPermission(
         jwt: Jwt,

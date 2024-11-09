@@ -6,8 +6,9 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.core.publisher.Flux
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
+import reactor.core.publisher.Flux
 
 @Component
 class PermissionService(
@@ -22,21 +23,36 @@ class PermissionService(
 
     override fun getAllSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO> {
         return webClient.get()
-            .uri("/all/user")
+            .uri("/permissions/user")
             .headers { it.setBearerAuth(jwt.tokenValue) }
             .retrieve()
             .bodyToFlux(PermissionResponseDTO::class.java)
     }
 
-    override fun checkPermission(
+    override fun canRead(
         jwt: Jwt,
         snippetId: Long,
-    ): Mono<PermissionResponseDTO> {
+    ): Mono<Boolean> {
         return webClient.get()
             .uri("/permissions/user/snippet/$snippetId")
             .headers { it.setBearerAuth(jwt.tokenValue) }
             .retrieve()
             .bodyToMono(PermissionResponseDTO::class.java)
+            .map { true }
+            .onErrorReturn(WebClientResponseException.NotFound::class.java, false)
+    }
+
+    override fun canModify(
+        jwt: Jwt,
+        snippetId: Long,
+    ): Mono<Boolean> {
+        return webClient.get()
+            .uri("/permissions/user/snippet/$snippetId")
+            .headers { it.setBearerAuth(jwt.tokenValue) }
+            .retrieve()
+            .bodyToMono(PermissionResponseDTO::class.java)
+            .map { it.permissionType == "OWNER" }
+            .onErrorReturn(WebClientResponseException.NotFound::class.java, false)
     }
 
     override fun addPermission(
@@ -70,7 +86,12 @@ class PermissionService(
             )
 
         return webClient.delete()
-            .uri("/permissions/user/snippet/{snippetId}/remove", snippetId)
+            .uri { uriBuilder ->
+                uriBuilder
+                    .path("/permissions/user/snippet/{snippetId}")
+                    .queryParam("permissionType", permission)
+                    .build(snippetId)
+            }
             .headers { it.setBearerAuth(jwt.tokenValue) }
             .retrieve()
             .bodyToMono(PermissionResponseDTO::class.java)

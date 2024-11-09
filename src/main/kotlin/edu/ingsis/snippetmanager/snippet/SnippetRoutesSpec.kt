@@ -21,9 +21,7 @@ import org.springframework.web.multipart.MultipartFile
 interface SnippetRoutesSpec {
     @GetMapping
     @Operation(summary = "Get all snippets")
-    fun getAllSnippets(
-        @AuthenticationPrincipal jwt: Jwt,
-    ): ResponseEntity<List<SnippetDto>>
+    fun getAllSnippets(): ResponseEntity<List<SnippetDto>>
 
     @GetMapping("/{id}")
     @Operation(
