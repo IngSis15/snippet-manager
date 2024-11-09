@@ -32,8 +32,9 @@ class SnippetService
             if (!canRead) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
-            val snippet = repository.findSnippetById(id)
-                ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
+            val snippet =
+                repository.findSnippetById(id)
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
             val content = fetchSnippetContent(id)
             return translate(snippet, content, "READ")
         }

@@ -8,10 +8,11 @@ import reactor.core.publisher.Mono
 
 class PermissionMockApi : PermissionApi {
     override fun getAllSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO> {
-        val permissions = listOf(
-            PermissionResponseDTO("1", jwt.subject, 1L, "owner"),
-            PermissionResponseDTO("2", jwt.subject, 2L, "viewer"),
-        )
+        val permissions =
+            listOf(
+                PermissionResponseDTO("1", jwt.subject, 1L, "owner"),
+                PermissionResponseDTO("2", jwt.subject, 2L, "viewer"),
+            )
         return Flux.fromIterable(permissions)
     }
 
