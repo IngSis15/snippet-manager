@@ -23,5 +23,5 @@ data class Test(
     val expectedOutput: List<String>,
     @ElementCollection
     @Column(nullable = false)
-    val userInput: List<String>
+    val userInput: List<String>,
 )

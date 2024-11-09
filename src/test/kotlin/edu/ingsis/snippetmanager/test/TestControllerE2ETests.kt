@@ -18,7 +18,6 @@ import org.springframework.test.web.reactive.server.WebTestClient
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
 class TestControllerE2ETests {
-
     @Autowired
     lateinit var client: WebTestClient
 
@@ -30,21 +29,23 @@ class TestControllerE2ETests {
 
     @BeforeEach
     fun setup() {
-        val snippet = Snippet(
-            name = "Test Snippet",
-            description = "A snippet for testing",
-            language = "printscript",
-            version = "1.1",
-            extension = "ps"
-        )
+        val snippet =
+            Snippet(
+                name = "Test Snippet",
+                description = "A snippet for testing",
+                language = "printscript",
+                version = "1.1",
+                extension = "ps",
+            )
 
         val savedSnippet = snippetRepository.save(snippet)
 
-        val test = Test(
-            snippet = savedSnippet,
-            expectedOutput = listOf("Expected Output Line 1", "Expected Output Line 2"),
-            userInput = listOf("User Input Line 1", "User Input Line 2")
-        )
+        val test =
+            Test(
+                snippet = savedSnippet,
+                expectedOutput = listOf("Expected Output Line 1", "Expected Output Line 2"),
+                userInput = listOf("User Input Line 1", "User Input Line 2"),
+            )
 
         testRepository.save(test)
     }
@@ -59,11 +60,12 @@ class TestControllerE2ETests {
     fun `should create Test`() {
         val snippetId = snippetRepository.findAll().first().id!!
 
-        val dto = CreateTestDTO(
-            snippetId = snippetId,
-            expectedOutput = listOf("Expected Output Line 1", "Expected Output Line 2"),
-            userInput = listOf("User Input Line 1", "User Input Line 2")
-        )
+        val dto =
+            CreateTestDTO(
+                snippetId = snippetId,
+                expectedOutput = listOf("Expected Output Line 1", "Expected Output Line 2"),
+                userInput = listOf("User Input Line 1", "User Input Line 2"),
+            )
 
         client.post().uri(BASE)
             .bodyValue(dto)
@@ -80,10 +82,11 @@ class TestControllerE2ETests {
     @Test
     fun `should update Test`() {
         val test = testRepository.findAll().first()
-        val dto = UpdateTestDTO(
-            expectedOutput = listOf("Updated Expected Output Line 1", "Updated Expected Output Line 2"),
-            userInput = listOf("Updated User Input Line 1", "Updated User Input Line 2")
-        )
+        val dto =
+            UpdateTestDTO(
+                expectedOutput = listOf("Updated Expected Output Line 1", "Updated Expected Output Line 2"),
+                userInput = listOf("Updated User Input Line 1", "Updated User Input Line 2"),
+            )
 
         client.put().uri("$BASE/${test.id}")
             .bodyValue(dto)
