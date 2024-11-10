@@ -8,4 +8,5 @@ data class SnippetDto(
     val version: String,
     val extension: String,
     val content: String,
+    val permission: String,
 )

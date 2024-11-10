@@ -9,7 +9,22 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - snippet-data:/var/lib/postgresql/data
+
+  permission-db:
+    image: postgres
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: ${PM_DB_USERNAME}
+      POSTGRES_PASSWORD: ${PM_DB_PASSWORD}
+      POSTGRES_DB: ${PM_DB_NAME}
+    volumes:
+      - permission-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
   assets:
     container_name: "asset_service"
     image: ghcr.io/austral-ingsis/snippet-asset-service:latest
@@ -19,6 +34,8 @@ services:
       AZURE_HOST: "http://azurite"
       NEW_RELIC_APP_NAME: "asset-service"
       NEW_RELIC_AGENT_ENABLED: false
+    networks:
+      - app-network
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
@@ -31,6 +48,8 @@ services:
       - "10002:10002"
     volumes:
       - blob:/workspace
+    networks:
+      - app-network
 
   ps-service:
     image: ghcr.io/ingsis15/printscript-service:dev
@@ -42,8 +61,33 @@ services:
       AUTH_SERVER_URI: ${AUTH_SERVER_URI}
       AUTH_CLIENT_ID: ${AUTH_CLIENT_ID}
       AUTH_CLIENT_SECRET: ${AUTH_CLIENT_SECRET}
+    networks:
+      - app-network
+
+  permission-service:
+    image: ghcr.io/ingsis15/permission-manager:dev
+    ports:
+      - "8082:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_HOST: permission-db
+      DB_NAME: ${PM_DB_NAME}
+      DB_USERNAME: ${PM_DB_USERNAME}
+      DB_PASSWORD: ${PM_DB_PASSWORD}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE}
+      AUTH_SERVER_URI: ${AUTH_SERVER_URI}
+      AUTH_CLIENT_ID: ${AUTH_CLIENT_ID}
+      AUTH_CLIENT_SECRET: ${AUTH_CLIENT_SECRET}
+    networks:
+      - app-network
+
 
 volumes:
-  db-data:
+  snippet-data:
+  permission-data:
   blob:
     external: false
+
+networks:
+  app-network:
+    driver: bridge

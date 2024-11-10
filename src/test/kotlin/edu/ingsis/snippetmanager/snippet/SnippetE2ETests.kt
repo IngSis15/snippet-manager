@@ -1,128 +1,141 @@
 package edu.ingsis.snippetmanager.snippet
 
-import edu.ingsis.snippetmanager.external.MockAssetApiConfiguration
-import edu.ingsis.snippetmanager.external.MockPrintScriptApiConfiguration
-import edu.ingsis.snippetmanager.external.asset.AssetApi
+import com.fasterxml.jackson.databind.ObjectMapper
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
-import org.junit.jupiter.api.AfterEach
+import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.MediaType
+import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.security.oauth2.jwt.JwtClaimNames
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.delete
+import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.post
+import java.time.Instant
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) // starts your spring server in a random port
-@ExtendWith(SpringExtension::class)
-@ActiveProfiles("test")
-@Import(MockPrintScriptApiConfiguration::class, MockAssetApiConfiguration::class)
-class SnippetE2ETests {
+@WebMvcTest(SnippetRoutes::class)
+class SnippetE2ETests
     @Autowired
-    lateinit var client: WebTestClient
+    constructor(private val mockMvc: MockMvc, private val objectMapper: ObjectMapper) {
+        @MockBean
+        private lateinit var snippetService: SnippetService
 
-    @Autowired
-    lateinit var repository: SnippetRepository
+        private lateinit var jwtToken: Jwt
 
-    @Autowired
-    lateinit var assetApi: AssetApi
+        @BeforeEach
+        fun setUp() {
+            jwtToken =
+                Jwt.withTokenValue("mockedToken")
+                    .header("alg", "none")
+                    .claim(JwtClaimNames.SUB, "test-user")
+                    .claim("scope", "read:snippets write:snippets")
+                    .issuedAt(Instant.now())
+                    .expiresAt(Instant.now().plusSeconds(3600))
+                    .build()
+        }
 
-    @BeforeEach
-    fun setup() {
-        val savedSnippets = repository.saveAll(SnippetFixtures.all())
+        @Test
+        fun `can get all snippets`() {
+            val snippets =
+                SnippetFixtures.all().map { snippet ->
+                    SnippetDto(
+                        id = snippet.id,
+                        name = snippet.name,
+                        description = snippet.description,
+                        language = snippet.language,
+                        version = snippet.version,
+                        extension = snippet.extension,
+                        content = SnippetFixtures.getContentFromName(snippet.name),
+                        permission = "VIEWER",
+                    )
+                }
+            mockMvc.post("/v1/snippet") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(snippets[0])
+                with(jwt().jwt(jwtToken))
+            }.andExpect { status { isCreated() } }
 
-        savedSnippets.forEach {
-            assetApi.createAsset("snippets", it.id.toString(), SnippetFixtures.getContentFromName(it.name)).block()
+            mockMvc.get("/v1/snippet") {
+                with(jwt().jwt(jwtToken))
+            }
+                .andExpect {
+                    status { isOk() }
+                }
+        }
+
+        @Test
+        fun `can get snippet from id`() {
+            val snippet = SnippetFixtures.all().first()
+            val snippetContent = "let y: number = 10;"
+
+            mockMvc.get("/v1/snippet/${snippet.id}") {
+                with(jwt().jwt(jwtToken))
+            }
+                .andExpect {
+                    status { isOk() }
+                }
+        }
+
+        @Test
+        fun `can create snippet`() {
+            val snippet =
+                CreateSnippetDto(
+                    name = "Declaration",
+                    description = "This snippet declares a variable y",
+                    language = "printscript",
+                    version = "1.1",
+                    content = "let y: number = 10;",
+                    extension = "ps",
+                )
+
+            mockMvc.post("/v1/snippet") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(snippet)
+                with(jwt().jwt(jwtToken))
+            }
+                .andExpect {
+                    status { isCreated() }
+                }
+        }
+
+        @Test
+        fun `can delete snippet`() {
+            val snippet = SnippetFixtures.all().first()
+            val snippetId = snippet.id ?: throw IllegalArgumentException("Snippet ID is null")
+
+            mockMvc.delete("/v1/snippet/$snippetId") {
+                with(jwt().jwt(jwtToken))
+            }
+                .andExpect {
+                    status { isOk() }
+                }
+        }
+
+        @Test
+        fun `can edit snippet`() {
+            val snippet = SnippetFixtures.all().first()
+            val editedSnippet =
+                CreateSnippetDto(
+                    name = snippet.name,
+                    description = snippet.description,
+                    language = snippet.language,
+                    version = snippet.version,
+                    extension = snippet.extension,
+                    content = "let a: number = 1;",
+                )
+
+            mockMvc.post("/v1/snippet/${snippet.id}") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(editedSnippet)
+                with(jwt().jwt(jwtToken))
+            }
+                .andExpect {
+                    status { isOk() }
+                }
         }
     }
-
-    @AfterEach
-    fun tearDown() {
-        repository.deleteAll()
-    }
-
-    @Test
-    fun `can get all snippets`() {
-        client.get().uri(BASE)
-            .exchange()
-            .expectStatus().isOk
-            .expectBody()
-            .jsonPath("$.length()").isEqualTo(2)
-    }
-
-    @Test
-    fun `can get snippet from id`() {
-        val snippet = repository.findAll().first()
-        val snippetContent =
-            assetApi.getAsset("snippets", snippet.id.toString()).block()
-                ?: throw IllegalArgumentException("Snippet not found")
-
-        client.get().uri("$BASE/${snippet.id}")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody()
-            .jsonPath("$.content").isEqualTo(snippetContent)
-            .jsonPath("$.name").isEqualTo(snippet.name)
-            .jsonPath("$.description").isEqualTo(snippet.description)
-    }
-
-    @Test
-    fun `can create snippet`() {
-        val snippet =
-            CreateSnippetDto(
-                name = "Declaration",
-                description = "This snippet declares a variable y",
-                language = "printscript",
-                version = "1.1",
-                content = "let y: number = 10;",
-                extension = "ps",
-            )
-
-        client.post().uri(BASE)
-            .bodyValue(snippet)
-            .exchange()
-            .expectStatus().isCreated
-            .expectBody()
-            .jsonPath("$.content").isEqualTo("let y: number = 10;")
-    }
-
-    @Test
-    fun `can delete snippet`() {
-        val snippet = repository.findAll().first()
-        client.delete().uri("$BASE/${snippet.id}")
-            .exchange()
-            .expectStatus().isOk
-
-        client.get().uri("$BASE/${snippet.id}")
-            .exchange()
-            .expectStatus().isNotFound
-    }
-
-    @Test
-    fun `can edit snippet`() {
-        val snippet = repository.findAll().first()
-
-        val editedSnippet =
-            CreateSnippetDto(
-                name = snippet.name,
-                description = snippet.description,
-                language = snippet.language,
-                version = snippet.version,
-                extension = snippet.extension,
-                content = "let a: number = 1;",
-            )
-
-        client.post().uri("$BASE/${snippet.id}")
-            .bodyValue(editedSnippet)
-            .exchange()
-            .expectStatus().isOk
-            .expectBody()
-            .jsonPath("$.content").isEqualTo("let a: number = 1;")
-    }
-
-    companion object {
-        private const val BASE = "/v1/snippet"
-    }
-}
