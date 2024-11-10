@@ -1,85 +1,96 @@
 package edu.ingsis.snippetmanager.config
 
-import edu.ingsis.snippetmanager.config.dto.FormattingConfigDto
-import edu.ingsis.snippetmanager.config.dto.LintingConfigDto
+import edu.ingsis.snippetmanager.config.configSchemas.FormattingSchemaDTO
+import edu.ingsis.snippetmanager.config.configSchemas.LintingSchemaDTO
+import edu.ingsis.snippetmanager.external.asset.AssetApi
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
+import org.springframework.web.server.ResponseStatusException
 
 @Component
 class ConfigService
     @Autowired
     constructor(
+        private val assetService: AssetApi,
         private val lintingConfigRepository: LintingConfigRepository,
         private val formattingConfigRepository: FormattingConfigRepository,
     ) {
-        fun getLintingConfig(userId: String): LintingConfigDto {
-            if (lintingConfigRepository.findConfigByUserId(userId) == null) {
-                val config =
-                    LintingConfig(userId = userId, camelCase = true, expressionAllowedInPrint = true, expressionAllowedInReadInput = true)
-                lintingConfigRepository.save(config)
-                return lintingConfigToDto(config)
+        private val json = Json { ignoreUnknownKeys = true }
+
+        fun getLintingConfig(userId: String): LintingSchemaDTO {
+            val usersLintingEntity = lintingConfigRepository.findConfigByUserId(userId)
+            if (usersLintingEntity != null) {
+                val usersLintingConfig = fetchLintingConfigSpecs(usersLintingEntity.id.toString())
+                return json.decodeFromString<LintingSchemaDTO>(usersLintingConfig)
+            } else {
+                val defaultLintingConfig = """
+                {
+                  "identifier_format": "camel case",
+                  "mandatory-variable-or-literal-in-println": true,
+                  "mandatory-variable-or-literal-in-readInput": true
+                }
+                """
+                val idGetter = lintingConfigRepository.save(LintingConfig(userId = userId))
+                assetService.createAsset("linting", idGetter.id.toString(), defaultLintingConfig).block()
+                return json.decodeFromString<LintingSchemaDTO>(defaultLintingConfig)
             }
-            return lintingConfigToDto(lintingConfigRepository.findConfigByUserId(userId)!!)
         }
 
-        fun getFormattingConfig(userId: String): FormattingConfigDto {
-            if (formattingConfigRepository.findConfigByUserId(userId) == null) {
-                val config =
-                    FormattingConfig(
-                        userId = userId,
-                        spaceBeforeColon = false,
-                        spaceAfterColon = false,
-                        spaceAroundAssignment = true,
-                        newLinesBeforePrintln = 0,
-                        indentSpaces = 4,
-                    )
-                formattingConfigRepository.save(config)
-                return formattingConfigToDto(config)
+        fun getFormattingConfig(userId: String): FormattingSchemaDTO {
+            val usersFormattingEntity = formattingConfigRepository.findConfigByUserId(userId)
+            if (usersFormattingEntity != null) {
+                val usersFormattingConfig = fetchFormattingConfigSpecs(usersFormattingEntity.id.toString())
+                return json.decodeFromString<FormattingSchemaDTO>(usersFormattingConfig)
+            } else {
+                val defaultFormattingConfig = """
+                {
+                  "enforce-spacing-before-colon-in-declaration": false,
+                  "enforce-spacing-after-colon-in-declaration": false,
+                  "enforce-no-spacing-around-equals": true,
+                  "newLinesBeforePrintln": 0,
+                  "indent-inside-if": 4
+                }
+                """
+                val idGetter = formattingConfigRepository.save(FormattingConfig(userId = userId))
+                assetService.createAsset("formatting", idGetter.id.toString(), defaultFormattingConfig).block()
+                return json.decodeFromString<FormattingSchemaDTO>(defaultFormattingConfig)
             }
-            return formattingConfigToDto(formattingConfigRepository.findConfigByUserId(userId)!!)
         }
 
         fun setLintingConfig(
             userId: String,
-            config: LintingConfigDto,
-        ): LintingConfigDto {
-            val entity = lintingConfigRepository.findConfigByUserId(userId)!!
-            entity.camelCase = config.camelCase
-            entity.expressionAllowedInPrint = config.expressionAllowedInPrint
-            entity.expressionAllowedInReadInput = config.expressionAllowedInReadInput
-            lintingConfigRepository.save(entity)
-            return lintingConfigToDto(entity)
+            config: LintingSchemaDTO,
+        ): LintingSchemaDTO {
+            var usersLintingEntity = lintingConfigRepository.findConfigByUserId(userId)
+            if (usersLintingEntity == null) {
+                usersLintingEntity = lintingConfigRepository.save(LintingConfig(userId = userId))
+            }
+            assetService.createAsset("linting", usersLintingEntity.id.toString(), json.encodeToString(config)).block()
+            return config
         }
 
         fun setFormattingConfig(
             userId: String,
-            config: FormattingConfigDto,
-        ): FormattingConfigDto {
-            val entity = formattingConfigRepository.findConfigByUserId(userId)!!
-            entity.spaceBeforeColon = config.spaceBeforeColon
-            entity.spaceAfterColon = config.spaceAfterColon
-            entity.spaceAroundAssignment = config.spaceAroundAssignment
-            entity.newLinesBeforePrintln = config.newLinesBeforePrintln
-            entity.indentSpaces = config.indentSpaces
-            formattingConfigRepository.save(entity)
-            return formattingConfigToDto(entity)
+            config: FormattingSchemaDTO,
+        ): FormattingSchemaDTO {
+            var usersFormattingEntity = formattingConfigRepository.findConfigByUserId(userId)
+            if (usersFormattingEntity == null) {
+                usersFormattingEntity = formattingConfigRepository.save(FormattingConfig(userId = userId))
+            }
+            assetService.createAsset("formatting", usersFormattingEntity.id.toString(), json.encodeToString(config)).block()
+            return config
         }
 
-        fun lintingConfigToDto(config: LintingConfig): LintingConfigDto {
-            return LintingConfigDto(
-                camelCase = config.camelCase,
-                expressionAllowedInPrint = config.expressionAllowedInPrint,
-                expressionAllowedInReadInput = config.expressionAllowedInReadInput,
-            )
+        fun fetchLintingConfigSpecs(configId: String): String {
+            return assetService.getAsset("linting", configId).block()
+                ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Linting config not found")
         }
 
-        fun formattingConfigToDto(config: FormattingConfig): FormattingConfigDto {
-            return FormattingConfigDto(
-                spaceBeforeColon = config.spaceBeforeColon,
-                spaceAfterColon = config.spaceAfterColon,
-                spaceAroundAssignment = config.spaceAroundAssignment,
-                newLinesBeforePrintln = config.newLinesBeforePrintln,
-                indentSpaces = config.indentSpaces,
-            )
+        fun fetchFormattingConfigSpecs(configId: String): String {
+            return assetService.getAsset("formatting", configId).block()
+                ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Formatting config not found")
         }
     }

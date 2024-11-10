@@ -11,12 +11,17 @@ COPY src src
 
 RUN ./gradlew build --no-daemon
 
+
 FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 
+COPY ./newrelic/newrelic.jar /app/newrelic/newrelic.jar
+COPY ./newrelic/newrelic.yml /app/newrelic/newrelic.yml
+
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-javaagent:/app/newrelic/newrelic.jar","-jar","app.jar"]
+
