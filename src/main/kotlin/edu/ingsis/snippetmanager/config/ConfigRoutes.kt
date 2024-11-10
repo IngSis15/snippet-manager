@@ -25,8 +25,8 @@ class ConfigRoutes
             jwt: Jwt,
             config: LintingSchemaDTO,
         ): ResponseEntity<LintingSchemaDTO> {
-            val userId = jwt.subject
-            return ResponseEntity.ok(service.setLintingConfig(userId, config))
+            val updatedConfig = service.lintSnippets(jwt, config)
+            return ResponseEntity.ok(updatedConfig)
         }
 
         override fun setFormattingConfig(

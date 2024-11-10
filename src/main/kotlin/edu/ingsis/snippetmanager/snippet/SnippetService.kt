@@ -3,8 +3,7 @@ package edu.ingsis.snippetmanager.snippet
 import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.permission.PermissionService
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
-import edu.ingsis.snippetmanager.external.printscript.dto.ValidateDTO
-import edu.ingsis.snippetmanager.redis.lint.LintSnippetProducer
+import edu.ingsis.snippetmanager.lint.LintService
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
@@ -23,8 +22,8 @@ class SnippetService
         private val repository: SnippetRepository,
         private val printScriptService: PrintScriptApi,
         private val assetService: AssetApi,
-        private val lintSnippetProducer: LintSnippetProducer,
         private val permissionService: PermissionService,
+        private val lintService: LintService,
     ) {
         fun getSnippet(
             id: Long,
@@ -34,8 +33,9 @@ class SnippetService
             if (!canRead) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
-            val snippet = repository.findSnippetById(id)
-                ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
+            val snippet =
+                repository.findSnippetById(id)
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
             val content = fetchSnippetContent(id)
             return translate(snippet, content, "READ")
         }
@@ -44,10 +44,13 @@ class SnippetService
             snippetDto: CreateSnippetDto,
             jwt: Jwt,
         ): SnippetDto {
-            validateSnippetContent(snippetDto.content, snippetDto.version)
+            validateSnippetContent(snippetDto.content)
 
             val snippet = translate(snippetDto)
             val savedSnippet = repository.save(snippet)
+
+            lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
+
             assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
             permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()
             return translate(savedSnippet, snippetDto.content, "OWNER")
@@ -59,7 +62,7 @@ class SnippetService
             jwt: Jwt,
         ): SnippetDto {
             val content = file.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-            validateSnippetContent(content, snippetDto.version)
+            validateSnippetContent(content)
             val snippet = translate(snippetDto)
             val savedSnippet = repository.save(snippet)
             assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
@@ -72,7 +75,7 @@ class SnippetService
             id: Long,
             jwt: Jwt,
         ): SnippetDto {
-            validateSnippetContent(snippetDto.content, snippetDto.version)
+            validateSnippetContent(snippetDto.content)
             val canModify = permissionService.canModify(jwt, id).block() ?: false
             if (!canModify) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
@@ -102,7 +105,7 @@ class SnippetService
             jwt: Jwt,
         ): SnippetDto {
             val content = file.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-            validateSnippetContent(content, snippetDto.version)
+            validateSnippetContent(content)
             val canModify = permissionService.canModify(jwt, id).block() ?: false
             if (!canModify) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
@@ -119,6 +122,7 @@ class SnippetService
                         snippetDto.extension,
                     ),
                 )
+
             assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
 
             return translate(savedSnippet, content, "OWNER")
@@ -143,12 +147,9 @@ class SnippetService
                 ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet content not found")
         }
 
-        private fun validateSnippetContent(
-            content: String,
-            version: String,
-        ) {
+        private fun validateSnippetContent(content: String) {
             val validation =
-                printScriptService.validate(ValidateDTO(content, version)).block()
+                printScriptService.validate(content).block()
                     ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating snippet")
             if (!validation.ok) {
                 throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid snippet content")
@@ -163,13 +164,6 @@ class SnippetService
                         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
                 val content = fetchSnippetContent(permission.snippetId)
                 translate(snippet, content, permission.permissionType)
-            }
-        }
-
-        fun getAllSnippets(): List<SnippetDto> {
-            return repository.findAll().map {
-                val content = fetchSnippetContent(it.id!!)
-                translate(it, content, "READ")
             }
         }
 

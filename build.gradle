@@ -58,6 +58,12 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
     testImplementation("org.springframework.security:spring-security-test")
 
+	// Redis Streams
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+	implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-reactor'
+
+	// KotlinX
+	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 }
 
 kotlin {

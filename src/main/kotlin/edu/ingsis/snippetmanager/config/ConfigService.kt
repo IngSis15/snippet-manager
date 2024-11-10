@@ -3,10 +3,14 @@ package edu.ingsis.snippetmanager.config
 import edu.ingsis.snippetmanager.config.configSchemas.FormattingSchemaDTO
 import edu.ingsis.snippetmanager.config.configSchemas.LintingSchemaDTO
 import edu.ingsis.snippetmanager.external.asset.AssetApi
+import edu.ingsis.snippetmanager.external.permission.PermissionService
+import edu.ingsis.snippetmanager.lint.LintSnippetProducer
+import edu.ingsis.snippetmanager.lint.dto.LintSnippetDto
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ResponseStatusException
 
@@ -17,8 +21,26 @@ class ConfigService
         private val assetService: AssetApi,
         private val lintingConfigRepository: LintingConfigRepository,
         private val formattingConfigRepository: FormattingConfigRepository,
+        private val permissionService: PermissionService,
+        private val lintSnippetProducer: LintSnippetProducer,
     ) {
         private val json = Json { ignoreUnknownKeys = true }
+
+        fun lintSnippets(
+            jwt: Jwt,
+            config: LintingSchemaDTO,
+        ): LintingSchemaDTO {
+            val userId = jwt.subject
+            setLintingConfig(userId, config)
+            val savedConfig = lintingConfigRepository.findConfigByUserId(userId)
+
+            permissionService.getAllSnippetPermissions(jwt).toIterable().map { snippet ->
+                val lintSnippetDto = LintSnippetDto(snippet.snippetId, savedConfig?.id!!)
+                lintSnippetProducer.publishEvent(json.encodeToString(lintSnippetDto))
+            }
+
+            return config
+        }
 
         fun getLintingConfig(userId: String): LintingSchemaDTO {
             val usersLintingEntity = lintingConfigRepository.findConfigByUserId(userId)
@@ -26,16 +48,9 @@ class ConfigService
                 val usersLintingConfig = fetchLintingConfigSpecs(usersLintingEntity.id.toString())
                 return json.decodeFromString<LintingSchemaDTO>(usersLintingConfig)
             } else {
-                val defaultLintingConfig = """
-                {
-                  "identifier_format": "camel case",
-                  "mandatory-variable-or-literal-in-println": true,
-                  "mandatory-variable-or-literal-in-readInput": true
-                }
-                """
-                val idGetter = lintingConfigRepository.save(LintingConfig(userId = userId))
-                assetService.createAsset("linting", idGetter.id.toString(), defaultLintingConfig).block()
-                return json.decodeFromString<LintingSchemaDTO>(defaultLintingConfig)
+                val config = saveDefaultLintingConfig(userId)
+                val content = assetService.getAsset("linting", config.id.toString()).block()
+                return json.decodeFromString<LintingSchemaDTO>(content!!)
             }
         }
 
@@ -45,31 +60,21 @@ class ConfigService
                 val usersFormattingConfig = fetchFormattingConfigSpecs(usersFormattingEntity.id.toString())
                 return json.decodeFromString<FormattingSchemaDTO>(usersFormattingConfig)
             } else {
-                val defaultFormattingConfig = """
-                {
-                  "enforce-spacing-before-colon-in-declaration": false,
-                  "enforce-spacing-after-colon-in-declaration": false,
-                  "enforce-no-spacing-around-equals": true,
-                  "newLinesBeforePrintln": 0,
-                  "indent-inside-if": 4
-                }
-                """
-                val idGetter = formattingConfigRepository.save(FormattingConfig(userId = userId))
-                assetService.createAsset("formatting", idGetter.id.toString(), defaultFormattingConfig).block()
-                return json.decodeFromString<FormattingSchemaDTO>(defaultFormattingConfig)
+                val config = saveDefaultFormattingConfig(userId)
+                val content = assetService.getAsset("formatting", config.id.toString()).block()
+                return json.decodeFromString<FormattingSchemaDTO>(content!!)
             }
         }
 
-        fun setLintingConfig(
+        private fun setLintingConfig(
             userId: String,
             config: LintingSchemaDTO,
-        ): LintingSchemaDTO {
+        ) {
             var usersLintingEntity = lintingConfigRepository.findConfigByUserId(userId)
             if (usersLintingEntity == null) {
                 usersLintingEntity = lintingConfigRepository.save(LintingConfig(userId = userId))
             }
             assetService.createAsset("linting", usersLintingEntity.id.toString(), json.encodeToString(config)).block()
-            return config
         }
 
         fun setFormattingConfig(
@@ -82,6 +87,20 @@ class ConfigService
             }
             assetService.createAsset("formatting", usersFormattingEntity.id.toString(), json.encodeToString(config)).block()
             return config
+        }
+
+        fun saveDefaultLintingConfig(userId: String): LintingConfig {
+            val defaultLintingConfig = ConfigFactory.defaultLintingRules()
+            val configSaved = lintingConfigRepository.save(LintingConfig(userId = userId))
+            assetService.createAsset("linting", configSaved.id.toString(), defaultLintingConfig).block()
+            return configSaved
+        }
+
+        fun saveDefaultFormattingConfig(userId: String): FormattingConfig {
+            val defaultFormattingConfig = ConfigFactory.defaultFormattingRules()
+            val configSaved = formattingConfigRepository.save(FormattingConfig(userId = userId))
+            assetService.createAsset("formatting", configSaved.id.toString(), defaultFormattingConfig).block()
+            return configSaved
         }
 
         fun fetchLintingConfigSpecs(configId: String): String {
