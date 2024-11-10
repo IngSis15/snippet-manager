@@ -1,6 +1,5 @@
 package edu.ingsis.snippetmanager.external.printscript
 
-import edu.ingsis.snippetmanager.external.printscript.dto.ValidateDTO
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateResultDTO
 import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Value
@@ -21,7 +20,7 @@ class PrintScriptService(
         webClient = WebClient.create(baseUrl)
     }
 
-    override fun validate(content: ValidateDTO): Mono<ValidateResultDTO> {
+    override fun validate(content: String): Mono<ValidateResultDTO> {
         val token = getToken()
 
         return webClient.post()
