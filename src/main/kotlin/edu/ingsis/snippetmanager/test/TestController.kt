@@ -29,7 +29,6 @@ class TestController(
                 id = test.id,
                 expectedOutput = test.expectedOutput,
                 userInput = test.userInput,
-                environmentVariables = test.environmentVariables,
             )
         return ResponseEntity.ok(response)
     }
