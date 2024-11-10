@@ -2,6 +2,8 @@ package edu.ingsis.snippetmanager.config
 
 import edu.ingsis.snippetmanager.config.configSchemas.FormattingSchemaDTO
 import edu.ingsis.snippetmanager.config.configSchemas.LintingSchemaDTO
+import edu.ingsis.snippetmanager.config.models.FormattingConfig
+import edu.ingsis.snippetmanager.config.models.LintingConfig
 import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.permission.PermissionService
 import edu.ingsis.snippetmanager.lint.LintSnippetProducer
@@ -66,7 +68,7 @@ class ConfigService
             }
         }
 
-        private fun setLintingConfig(
+        fun setLintingConfig(
             userId: String,
             config: LintingSchemaDTO,
         ) {
