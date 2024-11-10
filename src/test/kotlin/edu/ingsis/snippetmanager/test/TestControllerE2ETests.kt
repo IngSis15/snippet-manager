@@ -43,44 +43,40 @@ class TestControllerE2ETests {
         val test =
             Test(
                 snippet = savedSnippet,
-                expectedOutput = "Expected Output",
-                userInput = "User Input",
-                environmentVariables = mapOf("ENV_VAR" to "value"),
+                expectedOutput = listOf("Expected Output Line 1", "Expected Output Line 2"),
+                userInput = listOf("User Input Line 1", "User Input Line 2"),
             )
 
-        val savedTest = testRepository.save(test)
-
-        savedTest.environmentVariables
+        testRepository.save(test)
     }
 
     @AfterEach
     fun tearDown() {
         testRepository.deleteAll()
+        snippetRepository.deleteAll()
     }
 
     @Test
     fun `should create Test`() {
-        val snippetId = snippetRepository.findAll().first().id
+        val snippetId = snippetRepository.findAll().first().id!!
 
         val dto =
-            snippetId?.let {
-                CreateTestDTO(
-                    snippetId = it,
-                    expectedOutput = "Expected Output",
-                    userInput = "User Input",
-                    environmentVariables = mapOf("ENV_VAR" to "value"),
-                )
-            }
+            CreateTestDTO(
+                snippetId = snippetId,
+                expectedOutput = listOf("Expected Output Line 1", "Expected Output Line 2"),
+                userInput = listOf("User Input Line 1", "User Input Line 2"),
+            )
 
-        if (dto != null) {
-            client.post().uri(BASE)
-                .bodyValue(dto)
-                .exchange()
-                .expectStatus().isCreated
-                .expectBody()
-                .jsonPath("$.snippet.id").isEqualTo(snippetId)
-                .jsonPath("$.expectedOutput").isEqualTo(dto.expectedOutput)
-        }
+        client.post().uri(BASE)
+            .bodyValue(dto)
+            .exchange()
+            .expectStatus().isCreated
+            .expectBody()
+            .jsonPath("$.snippet.id").isEqualTo(snippetId)
+            .jsonPath("$.expectedOutput[0]").isEqualTo(dto.expectedOutput[0])
+            .jsonPath("$.expectedOutput[1]").isEqualTo(dto.expectedOutput[1])
+            .jsonPath("$.userInput[0]").isEqualTo(dto.userInput[0])
+            .jsonPath("$.userInput[1]").isEqualTo(dto.userInput[1])
     }
 
     @Test
@@ -88,9 +84,8 @@ class TestControllerE2ETests {
         val test = testRepository.findAll().first()
         val dto =
             UpdateTestDTO(
-                expectedOutput = "Updated Expected Output",
-                userInput = "Updated User Input",
-                environmentVariables = mapOf("NEW_ENV_VAR" to "new_value"),
+                expectedOutput = listOf("Updated Expected Output Line 1", "Updated Expected Output Line 2"),
+                userInput = listOf("Updated User Input Line 1", "Updated User Input Line 2"),
             )
 
         client.put().uri("$BASE/${test.id}")
@@ -98,8 +93,10 @@ class TestControllerE2ETests {
             .exchange()
             .expectStatus().isOk
             .expectBody()
-            .jsonPath("$.expectedOutput").isEqualTo("Updated Expected Output")
-            .jsonPath("$.userInput").isEqualTo("Updated User Input")
+            .jsonPath("$.expectedOutput[0]").isEqualTo("Updated Expected Output Line 1")
+            .jsonPath("$.expectedOutput[1]").isEqualTo("Updated Expected Output Line 2")
+            .jsonPath("$.userInput[0]").isEqualTo("Updated User Input Line 1")
+            .jsonPath("$.userInput[1]").isEqualTo("Updated User Input Line 2")
     }
 
     @Test

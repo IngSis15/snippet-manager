@@ -15,22 +15,20 @@ class TestService(
 ) {
     fun getTestById(id: Long): Test {
         return testRepository.findById(id)
-            .map { it.apply { environmentVariables } }
             .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "Test not found with id $id") }
     }
 
     @Transactional
     fun createTest(dto: CreateTestDTO): Test {
         val snippet =
-            snippetRepository.findById(dto.snippetId)
-                .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found") }
+            snippetRepository.findSnippetById(dto.snippetId)
+                ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
 
         val test =
             Test(
                 snippet = snippet,
                 expectedOutput = dto.expectedOutput,
                 userInput = dto.userInput,
-                environmentVariables = dto.environmentVariables,
             )
 
         return testRepository.save(test)
@@ -49,7 +47,6 @@ class TestService(
             test.copy(
                 expectedOutput = dto.expectedOutput,
                 userInput = dto.userInput,
-                environmentVariables = dto.environmentVariables,
             )
 
         return testRepository.save(updatedTest)

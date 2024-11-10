@@ -18,10 +18,10 @@ data class Test(
     @ManyToOne
     @JoinColumn(name = "snippet_id", nullable = false)
     val snippet: Snippet,
-    @Column(nullable = false)
-    val expectedOutput: String,
-    @Column(nullable = false)
-    val userInput: String,
     @ElementCollection
-    val environmentVariables: Map<String, String> = emptyMap(),
+    @Column(nullable = false)
+    val expectedOutput: List<String>,
+    @ElementCollection
+    @Column(nullable = false)
+    val userInput: List<String>,
 )
