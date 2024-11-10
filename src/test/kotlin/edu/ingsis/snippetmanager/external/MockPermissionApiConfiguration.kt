@@ -8,11 +8,10 @@ import org.springframework.context.annotation.Profile
 
 @Profile("test")
 @TestConfiguration
-class MockPermissionApiConfiguration{
+class MockPermissionApiConfiguration {
     @Bean
     @Primary
     fun createMockPermissionApi(): PermissionApi {
         return PermissionMockApi()
     }
-
 }
