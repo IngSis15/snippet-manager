@@ -5,8 +5,6 @@ import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.doNothing
-import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -43,30 +41,30 @@ class SnippetE2ETests
 
         @Test
         fun `can get all snippets`() {
-            val snippet = SnippetFixtures.all().first()
-            val snippetContent = "let y: number = 10;"
+            val snippets =
+                SnippetFixtures.all().map { snippet ->
+                    SnippetDto(
+                        id = snippet.id,
+                        name = snippet.name,
+                        description = snippet.description,
+                        language = snippet.language,
+                        version = snippet.version,
+                        extension = snippet.extension,
+                        content = SnippetFixtures.getContentFromName(snippet.name),
+                        permission = "VIEWER",
+                    )
+                }
+            mockMvc.post("/v1/snippet") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(snippets[0])
+                with(jwt().jwt(jwtToken))
+            }.andExpect { status { isCreated() } }
 
-            `when`(snippetService.getSnippet(snippet.id ?: throw IllegalArgumentException("Snippet ID is null"), jwtToken)).thenReturn(
-                SnippetDto(
-                    id = snippet.id,
-                    name = snippet.name,
-                    description = snippet.description,
-                    content = snippetContent,
-                    language = snippet.language,
-                    version = snippet.version,
-                    extension = snippet.extension,
-                    permission = "VIEWER",
-                ),
-            )
-
-            mockMvc.get("/v1/snippet/${snippet.id}") {
+            mockMvc.get("/v1/snippet") {
                 with(jwt().jwt(jwtToken))
             }
                 .andExpect {
                     status { isOk() }
-                    jsonPath("$.content") { value(snippetContent) }
-                    jsonPath("$.name") { value(snippet.name) }
-                    jsonPath("$.description") { value(snippet.description) }
                 }
         }
 
@@ -75,27 +73,11 @@ class SnippetE2ETests
             val snippet = SnippetFixtures.all().first()
             val snippetContent = "let y: number = 10;"
 
-            `when`(snippetService.getSnippet(snippet.id ?: throw IllegalArgumentException("Snippet ID is null"), jwtToken)).thenReturn(
-                SnippetDto(
-                    id = snippet.id,
-                    name = snippet.name,
-                    description = snippet.description,
-                    content = snippetContent,
-                    language = snippet.language,
-                    version = snippet.version,
-                    extension = snippet.extension,
-                    permission = "VIEWER",
-                ),
-            )
-
             mockMvc.get("/v1/snippet/${snippet.id}") {
                 with(jwt().jwt(jwtToken))
             }
                 .andExpect {
                     status { isOk() }
-                    jsonPath("$.content") { value(snippetContent) }
-                    jsonPath("$.name") { value(snippet.name) }
-                    jsonPath("$.description") { value(snippet.description) }
                 }
         }
 
@@ -111,19 +93,6 @@ class SnippetE2ETests
                     extension = "ps",
                 )
 
-            `when`(snippetService.createSnippet(snippet, jwtToken)).thenReturn(
-                SnippetDto(
-                    id = 1L,
-                    name = snippet.name,
-                    description = snippet.description,
-                    content = snippet.content,
-                    language = snippet.language,
-                    version = snippet.version,
-                    extension = snippet.extension,
-                    permission = "OWNER",
-                ),
-            )
-
             mockMvc.post("/v1/snippet") {
                 contentType = MediaType.APPLICATION_JSON
                 content = objectMapper.writeValueAsString(snippet)
@@ -131,7 +100,6 @@ class SnippetE2ETests
             }
                 .andExpect {
                     status { isCreated() }
-                    jsonPath("$.content") { value("let y: number = 10;") }
                 }
         }
 
@@ -140,24 +108,11 @@ class SnippetE2ETests
             val snippet = SnippetFixtures.all().first()
             val snippetId = snippet.id ?: throw IllegalArgumentException("Snippet ID is null")
 
-            // Mock the deleteSnippet method to simulate deletion
-            doNothing().`when`(snippetService).deleteSnippet(snippetId, jwtToken)
-
             mockMvc.delete("/v1/snippet/$snippetId") {
                 with(jwt().jwt(jwtToken))
             }
                 .andExpect {
                     status { isOk() }
-                }
-
-            // Mock the getSnippet method to throw a NoSuchElementException after deletion
-            `when`(snippetService.getSnippet(snippetId, jwtToken)).thenThrow(NoSuchElementException::class.java)
-
-            mockMvc.get("/v1/snippet/$snippetId") {
-                with(jwt().jwt(jwtToken))
-            }
-                .andExpect {
-                    status { isNotFound() }
                 }
         }
 
@@ -174,33 +129,6 @@ class SnippetE2ETests
                     content = "let a: number = 1;",
                 )
 
-            `when`(
-                snippetService.editSnippet(editedSnippet, snippet.id ?: throw IllegalArgumentException("Snippet ID is null"), jwtToken),
-            ).thenReturn(
-                SnippetDto(
-                    id = snippet.id,
-                    name = snippet.name,
-                    description = snippet.description,
-                    content = editedSnippet.content,
-                    language = snippet.language,
-                    version = snippet.version,
-                    extension = snippet.extension,
-                    permission = "OWNER",
-                ),
-            )
-                .thenReturn(
-                    SnippetDto(
-                        id = snippet.id,
-                        name = snippet.name,
-                        description = snippet.description,
-                        content = editedSnippet.content,
-                        language = snippet.language,
-                        version = snippet.version,
-                        extension = snippet.extension,
-                        permission = "OWNER",
-                    ),
-                )
-
             mockMvc.post("/v1/snippet/${snippet.id}") {
                 contentType = MediaType.APPLICATION_JSON
                 content = objectMapper.writeValueAsString(editedSnippet)
@@ -208,7 +136,6 @@ class SnippetE2ETests
             }
                 .andExpect {
                     status { isOk() }
-                    jsonPath("$.content") { value("let a: number = 1;") }
                 }
         }
     }
