@@ -23,5 +23,4 @@ COPY ./newrelic/newrelic.yml /app/newrelic/newrelic.yml
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-javaagent:/app/newrelic/newrelic.jar","-jar","app.jar"]
-
+ENTRYPOINT ["java","-javaagent:/app/newrelic/newrelic.jar","-jar","-Dspring.profiles.active=production","app.jar"]
