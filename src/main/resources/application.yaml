@@ -51,3 +51,5 @@ services:
 stream:
   lint:
     key: "lint"
+  format:
+    key: "format"

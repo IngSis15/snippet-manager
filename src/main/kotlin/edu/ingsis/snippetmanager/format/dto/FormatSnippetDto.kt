@@ -1,9 +1,9 @@
-package edu.ingsis.snippetmanager.lint.dto
+package edu.ingsis.snippetmanager.format.dto
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-class LintSnippetDto(
+class FormatSnippetDto(
     val snippetId: Long,
     val configId: String,
 )

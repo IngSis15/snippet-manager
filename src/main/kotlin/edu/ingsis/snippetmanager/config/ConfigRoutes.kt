@@ -33,7 +33,7 @@ class ConfigRoutes
             jwt: Jwt,
             config: FormattingSchemaDTO,
         ): ResponseEntity<FormattingSchemaDTO> {
-            val userId = jwt.subject
-            return ResponseEntity.ok(service.setFormattingConfig(userId, config))
+            val updatedConfig = service.formatSnippets(jwt, config)
+            return ResponseEntity.ok(updatedConfig)
         }
     }

@@ -1,29 +1,29 @@
-package edu.ingsis.snippetmanager.lint
+package edu.ingsis.snippetmanager.format
 
 import edu.ingsis.snippetmanager.config.ConfigService
-import edu.ingsis.snippetmanager.lint.dto.LintSnippetDto
+import edu.ingsis.snippetmanager.format.dto.FormatSnippetDto
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class LintService
+class FormatService
     @Autowired
     constructor(
-        private val lintSnippetProducer: LintSnippetProducer,
+        private val formatSnippetProducer: RedisFormatSnippetProducer,
         private val configService: ConfigService,
     ) {
-        fun lintSnippet(
+        fun formatSnippet(
             snippetId: Long,
             userId: String,
         ) {
             saveDefaultConfig(userId)
-            val lintSnippetDto = LintSnippetDto(snippetId, userId.replace("|", ""))
-            lintSnippetProducer.publishEvent(Json.encodeToString(lintSnippetDto))
+            val formatSnippetDto = FormatSnippetDto(snippetId, userId.replace("|", ""))
+            formatSnippetProducer.publishEvent(Json.encodeToString(formatSnippetDto))
         }
 
         private fun saveDefaultConfig(userId: String) {
-            configService.getLintingConfig(userId)
+            configService.getFormattingConfig(userId)
         }
     }
