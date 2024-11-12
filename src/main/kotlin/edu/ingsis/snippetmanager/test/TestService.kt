@@ -26,6 +26,7 @@ class TestService(
 
         val test =
             Test(
+                name = dto.name,
                 snippet = snippet,
                 expectedOutput = dto.expectedOutput,
                 userInput = dto.userInput,
