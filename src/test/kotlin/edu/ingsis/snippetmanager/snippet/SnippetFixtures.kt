@@ -10,6 +10,7 @@ object SnippetFixtures {
                 language = "printscript",
                 version = "1.1",
                 extension = "ps",
+                conformance = Conformance.PENDING,
             ),
             Snippet(
                 id = 2L,
@@ -18,6 +19,7 @@ object SnippetFixtures {
                 language = "printscript",
                 version = "1.1",
                 extension = "ps",
+                conformance = Conformance.PENDING,
             ),
         )
 

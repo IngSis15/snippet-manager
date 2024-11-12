@@ -1,12 +1,12 @@
 package edu.ingsis.snippetmanager.test
 
+import edu.ingsis.snippetmanager.snippet.Conformance
 import edu.ingsis.snippetmanager.snippet.Snippet
 import edu.ingsis.snippetmanager.snippet.SnippetRepository
 import edu.ingsis.snippetmanager.test.dto.CreateTestDTO
 import edu.ingsis.snippetmanager.test.dto.UpdateTestDTO
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -36,12 +36,14 @@ class TestControllerE2ETests {
                 language = "printscript",
                 version = "1.1",
                 extension = "ps",
+                conformance = Conformance.PENDING,
             )
 
         val savedSnippet = snippetRepository.save(snippet)
 
         val test =
             Test(
+                name = "Test Name",
                 snippet = savedSnippet,
                 expectedOutput = listOf("Expected Output Line 1", "Expected Output Line 2"),
                 userInput = listOf("User Input Line 1", "User Input Line 2"),
@@ -56,13 +58,14 @@ class TestControllerE2ETests {
         snippetRepository.deleteAll()
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     fun `should create Test`() {
         val snippetId = snippetRepository.findAll().first().id!!
 
         val dto =
             CreateTestDTO(
                 snippetId = snippetId,
+                name = "Test Name",
                 expectedOutput = listOf("Expected Output Line 1", "Expected Output Line 2"),
                 userInput = listOf("User Input Line 1", "User Input Line 2"),
             )
@@ -79,7 +82,7 @@ class TestControllerE2ETests {
             .jsonPath("$.userInput[1]").isEqualTo(dto.userInput[1])
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     fun `should update Test`() {
         val test = testRepository.findAll().first()
         val dto =
@@ -99,7 +102,7 @@ class TestControllerE2ETests {
             .jsonPath("$.userInput[1]").isEqualTo("Updated User Input Line 2")
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     fun `should delete Test`() {
         val test = testRepository.findAll().first()
 
