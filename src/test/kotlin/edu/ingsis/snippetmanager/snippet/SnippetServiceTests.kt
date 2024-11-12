@@ -4,6 +4,7 @@ import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.permission.PermissionService
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateResultDTO
+import edu.ingsis.snippetmanager.format.FormatService
 import edu.ingsis.snippetmanager.lint.LintService
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -42,6 +43,9 @@ class SnippetServiceTests {
 
     @Mock
     private lateinit var lintService: LintService
+
+    @Mock
+    private lateinit var formatService: FormatService
 
     @InjectMocks
     private lateinit var snippetService: SnippetService
