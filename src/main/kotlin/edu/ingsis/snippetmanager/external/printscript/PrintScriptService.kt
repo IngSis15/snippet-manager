@@ -1,8 +1,6 @@
 package edu.ingsis.snippetmanager.external.printscript
 
-import edu.ingsis.snippetmanager.external.printscript.dto.ExecuteRequestDto
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateResultDTO
-import edu.ingsis.snippetmanager.snippet.dto.ExecuteResultDto
 import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
@@ -31,21 +29,6 @@ class PrintScriptService(
             .bodyValue(content)
             .retrieve()
             .bodyToMono(ValidateResultDTO::class.java)
-    }
-
-    override fun execute(
-        snippetId: Long,
-        input: List<String>,
-    ): Mono<ExecuteResultDto> {
-        val token = getToken()
-        val dto = ExecuteRequestDto("snippets", snippetId.toString(), input)
-
-        return webClient.post()
-            .uri("/v1/execute")
-            .headers { it.setBearerAuth(token.toString()) }
-            .bodyValue(dto)
-            .retrieve()
-            .bodyToMono(ExecuteResultDto::class.java)
     }
 
     private fun getToken(): String? {

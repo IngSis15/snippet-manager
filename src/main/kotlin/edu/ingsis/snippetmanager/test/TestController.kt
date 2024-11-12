@@ -27,7 +27,6 @@ class TestController(
         val response =
             TestResponse(
                 id = test.id,
-                name = test.name,
                 expectedOutput = test.expectedOutput,
                 userInput = test.userInput,
             )
