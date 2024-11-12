@@ -15,4 +15,5 @@ class Snippet(
     val language: String,
     val version: String,
     val extension: String,
+    val conformance: Conformance,
 )

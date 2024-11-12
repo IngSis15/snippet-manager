@@ -3,6 +3,7 @@ package edu.ingsis.snippetmanager.snippet
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
+import edu.ingsis.snippetmanager.snippet.dto.TestResponseDto
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 class SnippetRoutes
     @Autowired
-    constructor(private val service: SnippetService) : SnippetRoutesSpec {
+    constructor(private val service: SnippetService, private val testSnippetService: TestSnippetService) : SnippetRoutesSpec {
         override fun getAllSnippets(): ResponseEntity<List<SnippetDto>> {
             return ResponseEntity.ok(service.getAllSnippets())
         }
@@ -105,5 +106,12 @@ class SnippetRoutes
 
         override fun getSnippetsByUser(jwt: Jwt): ResponseEntity<List<SnippetDto>> {
             return ResponseEntity.ok(service.getSnippetsByUser(jwt))
+        }
+
+        override fun runTest(
+            testId: Long,
+            jwt: Jwt,
+        ): ResponseEntity<TestResponseDto> {
+            return ResponseEntity.ok(testSnippetService.runTest(testId, jwt))
         }
     }

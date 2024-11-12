@@ -75,6 +75,7 @@ class SnippetServiceTests {
                 language = snippetDto.language,
                 version = snippetDto.version,
                 extension = snippetDto.extension,
+                conformance = Conformance.PENDING,
             )
 
         val validateResultDTO = ValidateResultDTO(true, emptyList())
@@ -94,8 +95,8 @@ class SnippetServiceTests {
     fun `can get all snippets`() {
         val snippets =
             listOf(
-                Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps"),
-                Snippet(2L, "Snippet2", "Description2", "printscript", "1.1", "ps"),
+                Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps", Conformance.PENDING),
+                Snippet(2L, "Snippet2", "Description2", "printscript", "1.1", "ps", Conformance.PENDING),
             )
 
         `when`(repository.findAll()).thenReturn(snippets)
@@ -108,7 +109,7 @@ class SnippetServiceTests {
 
     @Test
     fun `can get snippet from id`() {
-        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps")
+        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps", Conformance.PENDING)
 
         `when`(repository.findSnippetById(snippet.id!!)).thenReturn(snippet)
         `when`(assetService.getAsset(anyOrNull(), anyOrNull())).thenReturn(Mono.just("content"))
@@ -121,7 +122,7 @@ class SnippetServiceTests {
 
     @Test
     fun `can delete snippet`() {
-        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps")
+        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps", Conformance.PENDING)
 
         `when`(repository.findSnippetById(snippet.id!!)).thenReturn(snippet)
         `when`(permissionService.canModify(anyOrNull(), anyOrNull())).thenReturn(Mono.just(true))
@@ -136,7 +137,7 @@ class SnippetServiceTests {
 
     @Test
     fun `can edit snippet`() {
-        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps")
+        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps", Conformance.PENDING)
         val editedSnippetDto =
             CreateSnippetDto(
                 name = snippet.name,

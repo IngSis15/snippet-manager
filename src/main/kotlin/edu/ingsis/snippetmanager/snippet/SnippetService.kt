@@ -87,6 +87,7 @@ class SnippetService
                         snippetDto.language,
                         snippetDto.version,
                         snippetDto.extension,
+                        Conformance.PENDING,
                     ),
                 )
 
@@ -115,6 +116,7 @@ class SnippetService
                         snippetDto.language,
                         snippetDto.version,
                         snippetDto.extension,
+                        Conformance.PENDING,
                     ),
                 )
             assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
@@ -175,6 +177,7 @@ class SnippetService
                 language = snippetDto.language,
                 version = snippetDto.version,
                 extension = snippetDto.extension,
+                conformance = Conformance.PENDING,
             )
 
         private fun translate(snippetFileDto: CreateSnippetFileDto) =
@@ -184,6 +187,7 @@ class SnippetService
                 language = snippetFileDto.language,
                 version = snippetFileDto.version,
                 extension = snippetFileDto.extension,
+                conformance = Conformance.PENDING,
             )
 
         private fun translate(
