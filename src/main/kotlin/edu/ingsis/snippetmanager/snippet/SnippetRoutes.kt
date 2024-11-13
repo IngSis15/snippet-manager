@@ -112,8 +112,10 @@ class SnippetRoutes
 
         override fun getSnippetsByUser(
             jwt: Jwt,
-            pageable: Pageable,
+            page: Int,
+            size: Int,
         ): ResponseEntity<Page<SnippetDto>> {
+            val pageable: Pageable = PageRequest.of(page, size)
             return ResponseEntity.ok(service.getSnippetsByUser(jwt, pageable))
         }
 

@@ -5,7 +5,6 @@ import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -97,7 +96,8 @@ interface SnippetRoutesSpec {
     @Operation(summary = "Get all snippets from user")
     fun getSnippetsByUser(
         @AuthenticationPrincipal jwt: Jwt,
-        @RequestParam pageable: Pageable,
+        @RequestParam page: Int,
+        @RequestParam size: Int,
     ): ResponseEntity<Page<SnippetDto>>
 
     @PutMapping("/{id}")
