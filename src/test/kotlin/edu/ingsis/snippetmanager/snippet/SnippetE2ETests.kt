@@ -21,15 +21,9 @@ import java.time.Instant
 @WebMvcTest(SnippetRoutes::class)
 class SnippetE2ETests
     @Autowired
-    constructor(
-        private val mockMvc: MockMvc,
-        private val objectMapper: ObjectMapper,
-    ) {
+    constructor(private val mockMvc: MockMvc, private val objectMapper: ObjectMapper) {
         @MockBean
         private lateinit var snippetService: SnippetService
-
-        @MockBean
-        private lateinit var testSnippetService: TestSnippetService
 
         private lateinit var jwtToken: Jwt
 
