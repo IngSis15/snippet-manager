@@ -61,6 +61,8 @@ class SnippetE2ETests
             }.andExpect { status { isCreated() } }
 
             mockMvc.get("/v1/snippet") {
+                param("page", "0")
+                param("size", "10")
                 with(jwt().jwt(jwtToken))
             }
                 .andExpect {

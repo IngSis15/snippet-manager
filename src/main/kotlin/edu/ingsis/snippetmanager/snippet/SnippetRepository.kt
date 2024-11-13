@@ -10,4 +10,6 @@ interface SnippetRepository : PagingAndSortingRepository<Snippet, Long> {
     fun deleteById(id: Long)
 
     fun save(snippet: Snippet): Snippet
+
+    fun deleteAll()
 }

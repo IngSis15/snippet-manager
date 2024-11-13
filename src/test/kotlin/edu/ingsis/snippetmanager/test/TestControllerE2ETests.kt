@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -58,7 +59,8 @@ class TestControllerE2ETests {
 
     @Test
     fun `should create Test`() {
-        val snippetId = snippetRepository.findAll().first().id!!
+        val pageable = PageRequest.of(0, 10)
+        val snippetId = snippetRepository.findAll(pageable).content.first().id!!
 
         val dto =
             CreateTestDTO(
