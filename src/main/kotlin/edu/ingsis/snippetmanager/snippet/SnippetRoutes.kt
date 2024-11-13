@@ -17,11 +17,9 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 class SnippetRoutes
     @Autowired
-    constructor(private val service: SnippetService) : SnippetRoutesSpec {
-        override fun getAllSnippets(): ResponseEntity<List<SnippetDto>> {
-            return ResponseEntity.ok(service.getAllSnippets())
-        }
-
+    constructor(
+        private val service: SnippetService,
+    ) : SnippetRoutesSpec {
         override fun getSnippet(
             @PathVariable id: Long,
             @AuthenticationPrincipal jwt: Jwt,

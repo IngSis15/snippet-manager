@@ -26,6 +26,10 @@ spring:
   servlet:
     multipart:
       enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 auth0:
   audience: ${AUTH0_AUDIENCE}
@@ -43,3 +47,9 @@ services:
     url: ${ASSET_HOST:http://localhost:8081}
   permission:
     url: ${PERMISSION_HOST:http://localhost:8082}
+
+stream:
+  lint:
+    key: "lint"
+  format:
+    key: "format"

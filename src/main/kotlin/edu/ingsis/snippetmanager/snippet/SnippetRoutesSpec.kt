@@ -20,8 +20,10 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("v1/snippet")
 interface SnippetRoutesSpec {
     @GetMapping
-    @Operation(summary = "Get all snippets")
-    fun getAllSnippets(): ResponseEntity<List<SnippetDto>>
+    @Operation(summary = "Get all snippets from user")
+    fun getSnippetsByUser(
+        @AuthenticationPrincipal jwt: Jwt,
+    ): ResponseEntity<List<SnippetDto>>
 
     @GetMapping("/{id}")
     @Operation(
@@ -86,10 +88,4 @@ interface SnippetRoutesSpec {
         @PathVariable id: Long,
         @AuthenticationPrincipal jwt: Jwt,
     ): ResponseEntity<SnippetDto>
-
-    @GetMapping("/user")
-    @Operation(summary = "Get all snippets from user")
-    fun getSnippetsByUser(
-        @AuthenticationPrincipal jwt: Jwt,
-    ): ResponseEntity<List<SnippetDto>>
 }
