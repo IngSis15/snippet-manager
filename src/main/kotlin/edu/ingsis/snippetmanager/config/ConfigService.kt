@@ -64,7 +64,7 @@ class ConfigService
                 return json.decodeFromString<LintingSchemaDTO>(config!!)
             } catch (e: ResponseStatusException) {
                 val defaultLintingConfig = ConfigFactory.defaultLintingRules()
-                assetService.createAsset("linting", userId, defaultLintingConfig).block()
+                assetService.createAsset("linting", sanitizedUserId, defaultLintingConfig).block()
                 return json.decodeFromString<LintingSchemaDTO>(defaultLintingConfig)
             }
         }
@@ -76,7 +76,7 @@ class ConfigService
                 return json.decodeFromString<FormattingSchemaDTO>(config!!)
             } catch (e: ResponseStatusException) {
                 val defaultFormattingRules = ConfigFactory.defaultFormattingRules()
-                assetService.createAsset("formatting", userId, defaultFormattingRules).block()
+                assetService.createAsset("formatting", sanitizedUserId, defaultFormattingRules).block()
                 return json.decodeFromString<FormattingSchemaDTO>(defaultFormattingRules)
             }
         }
