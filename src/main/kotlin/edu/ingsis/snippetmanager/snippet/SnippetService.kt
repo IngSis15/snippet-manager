@@ -8,6 +8,9 @@ import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
@@ -150,22 +153,62 @@ class SnippetService
             }
         }
 
-        fun getSnippetsByUser(jwt: Jwt): List<SnippetDto> {
-            return permissionService.getAllSnippetPermissions(jwt).toIterable().map {
-                    permission ->
-                val snippet =
-                    repository.findSnippetById(permission.snippetId)
-                        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
-                val content = fetchSnippetContent(permission.snippetId)
-                translate(snippet, content, permission.permissionType)
+        fun getSnippetsByUser(
+            jwt: Jwt,
+            pageable: Pageable,
+        ): Page<SnippetDto> {
+            val permissions = permissionService.getAllSnippetPermissions(jwt).collectList().block() ?: emptyList()
+            val snippets =
+                permissions.mapNotNull { permission ->
+                    val snippet = repository.findSnippetById(permission.snippetId)
+                    snippet?.let {
+                        val content = fetchSnippetContent(it.id!!)
+                        translate(it, content, permission.permissionType)
+                    }
+                }
+            val start = pageable.offset.toInt()
+            val end = (start + pageable.pageSize).coerceAtMost(snippets.size)
+            val pagedSnippets = snippets.subList(start, end)
+            return PageImpl(pagedSnippets, pageable, snippets.size.toLong())
+        }
+
+        fun getAllSnippets(pageable: Pageable): Page<SnippetDto> {
+            return repository.findAll(pageable).map { snippet ->
+                val content = fetchSnippetContent(snippet.id!!)
+                translate(snippet, content, "READ")
             }
         }
 
-        fun getAllSnippets(): List<SnippetDto> {
-            return repository.findAll().map {
-                val content = fetchSnippetContent(it.id!!)
-                translate(it, content, "READ")
+        fun updateFromString(
+            snippet: String,
+            jwt: Jwt,
+            id: Long,
+        ): SnippetDto {
+            validateSnippetContent(snippet)
+            val canModify = permissionService.canModify(jwt, id).block() ?: false
+            if (!canModify) {
+                throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
+
+            val originalSnippet =
+                repository.findSnippetById(id)
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
+
+            assetService.createAsset("snippets", id.toString(), snippet).block()
+
+            val savedSnippet =
+                repository.save(
+                    Snippet(
+                        id,
+                        originalSnippet.name,
+                        originalSnippet.description,
+                        originalSnippet.language,
+                        originalSnippet.version,
+                        originalSnippet.extension,
+                    ),
+                )
+
+            return translate(savedSnippet, snippet, "OWNER")
         }
 
         private fun translate(snippetDto: CreateSnippetDto) =

@@ -4,6 +4,8 @@ import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -21,7 +24,10 @@ import org.springframework.web.multipart.MultipartFile
 interface SnippetRoutesSpec {
     @GetMapping
     @Operation(summary = "Get all snippets")
-    fun getAllSnippets(): ResponseEntity<List<SnippetDto>>
+    fun getAllSnippets(
+        @RequestParam page: Int,
+        @RequestParam size: Int,
+    ): ResponseEntity<Page<SnippetDto>>
 
     @GetMapping("/{id}")
     @Operation(
@@ -91,5 +97,14 @@ interface SnippetRoutesSpec {
     @Operation(summary = "Get all snippets from user")
     fun getSnippetsByUser(
         @AuthenticationPrincipal jwt: Jwt,
-    ): ResponseEntity<List<SnippetDto>>
+        @RequestParam pageable: Pageable,
+    ): ResponseEntity<Page<SnippetDto>>
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update snippet from string")
+    fun updateFromString(
+        @RequestBody snippet: String,
+        @AuthenticationPrincipal jwt: Jwt,
+        @PathVariable id: Long,
+    ): ResponseEntity<SnippetDto>
 }

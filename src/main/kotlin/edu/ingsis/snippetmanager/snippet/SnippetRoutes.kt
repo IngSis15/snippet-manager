@@ -4,6 +4,9 @@ import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -18,8 +21,12 @@ import org.springframework.web.multipart.MultipartFile
 class SnippetRoutes
     @Autowired
     constructor(private val service: SnippetService) : SnippetRoutesSpec {
-        override fun getAllSnippets(): ResponseEntity<List<SnippetDto>> {
-            return ResponseEntity.ok(service.getAllSnippets())
+        override fun getAllSnippets(
+            @RequestParam page: Int,
+            @RequestParam size: Int,
+        ): ResponseEntity<Page<SnippetDto>> {
+            val pageable: Pageable = PageRequest.of(page, size)
+            return ResponseEntity.ok(service.getAllSnippets(pageable))
         }
 
         override fun getSnippet(
@@ -103,7 +110,18 @@ class SnippetRoutes
             )
         }
 
-        override fun getSnippetsByUser(jwt: Jwt): ResponseEntity<List<SnippetDto>> {
-            return ResponseEntity.ok(service.getSnippetsByUser(jwt))
+        override fun getSnippetsByUser(
+            jwt: Jwt,
+            pageable: Pageable,
+        ): ResponseEntity<Page<SnippetDto>> {
+            return ResponseEntity.ok(service.getSnippetsByUser(jwt, pageable))
+        }
+
+        override fun updateFromString(
+            snippet: String,
+            jwt: Jwt,
+            id: Long,
+        ): ResponseEntity<SnippetDto> {
+            return ResponseEntity.ok(service.updateFromString(snippet, jwt, id))
         }
     }
