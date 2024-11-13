@@ -3,6 +3,8 @@ package edu.ingsis.snippetmanager.snippet
 import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.permission.PermissionService
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
+import edu.ingsis.snippetmanager.format.FormatService
+import edu.ingsis.snippetmanager.lint.LintService
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
@@ -25,6 +27,8 @@ class SnippetService
         private val printScriptService: PrintScriptApi,
         private val assetService: AssetApi,
         private val permissionService: PermissionService,
+        private val lintService: LintService,
+        private val formatService: FormatService,
     ) {
         fun getSnippet(
             id: Long,
@@ -49,6 +53,10 @@ class SnippetService
 
             val snippet = translate(snippetDto)
             val savedSnippet = repository.save(snippet)
+
+            lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
+            formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
+
             assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
             permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()
             return translate(savedSnippet, snippetDto.content, "OWNER")
@@ -120,6 +128,7 @@ class SnippetService
                         snippetDto.extension,
                     ),
                 )
+
             assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
 
             return translate(savedSnippet, content, "OWNER")

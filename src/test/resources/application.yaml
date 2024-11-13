@@ -16,3 +16,9 @@ services:
     url: http://mocked-url-for-test
   permission:
     url: http://mocked-url-for-test
+
+stream:
+  lint:
+    key: "lint"
+  format:
+    key: "format"

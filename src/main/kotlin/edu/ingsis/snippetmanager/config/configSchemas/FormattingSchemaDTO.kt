@@ -11,7 +11,7 @@ data class FormattingSchemaDTO(
     @SerialName("enforce-no-spacing-around-equals")
     val noSpaceAroundAssignment: Boolean,
     @SerialName("newLinesBeforePrintln")
-    val newLinesBeforePrintln: Int,
+    val newLinesBeforePrintln: Int? = null,
     @SerialName("indent-inside-if")
-    val indentSpaces: Int,
+    val indentSpaces: Int? = null,
 )

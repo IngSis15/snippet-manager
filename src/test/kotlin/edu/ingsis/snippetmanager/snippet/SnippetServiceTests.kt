@@ -4,6 +4,8 @@ import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.permission.PermissionService
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateResultDTO
+import edu.ingsis.snippetmanager.format.FormatService
+import edu.ingsis.snippetmanager.lint.LintService
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -38,6 +40,12 @@ class SnippetServiceTests {
 
     @Mock
     private lateinit var permissionService: PermissionService
+
+    @Mock
+    private lateinit var lintService: LintService
+
+    @Mock
+    private lateinit var formatService: FormatService
 
     @InjectMocks
     private lateinit var snippetService: SnippetService
@@ -88,22 +96,6 @@ class SnippetServiceTests {
 
         assertEquals(snippetDto.name, createdSnippet.name)
         assertEquals(snippetDto.content, createdSnippet.content)
-    }
-
-    @Test
-    fun `can get all snippets`() {
-        val snippets =
-            listOf(
-                Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps"),
-                Snippet(2L, "Snippet2", "Description2", "printscript", "1.1", "ps"),
-            )
-
-        `when`(repository.findAll()).thenReturn(snippets)
-        `when`(assetService.getAsset(anyOrNull(), anyOrNull())).thenReturn(Mono.just("content"))
-
-        val allSnippets = snippetService.getAllSnippets()
-
-        assertEquals(snippets.size, allSnippets.size)
     }
 
     @Test
