@@ -60,4 +60,8 @@ class TestService(
         }
         testRepository.deleteById(id)
     }
+
+    fun getTestsBySnippetId(snippetId: Long): List<Test>? {
+        return testRepository.findAllBySnippetId(snippetId)
+    }
 }

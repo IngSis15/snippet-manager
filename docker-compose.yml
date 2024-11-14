@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres
+    image: postgres:16
     restart: always
     ports:
       - "5432:5432"
@@ -12,7 +12,7 @@ services:
       - snippet-data:/var/lib/postgresql/data
 
   permission-db:
-    image: postgres
+    image: postgres:16
     restart: always
     ports:
       - "5433:5432"
@@ -72,6 +72,7 @@ services:
     environment:
       SERVER_PORT: 8080
       DB_HOST: permission-db
+      DB_PORT: 5432
       DB_NAME: ${PM_DB_NAME}
       DB_USERNAME: ${PM_DB_USERNAME}
       DB_PASSWORD: ${PM_DB_PASSWORD}
@@ -79,6 +80,10 @@ services:
       AUTH_SERVER_URI: ${AUTH_SERVER_URI}
       AUTH_CLIENT_ID: ${AUTH_CLIENT_ID}
       AUTH_CLIENT_SECRET: ${AUTH_CLIENT_SECRET}
+      AUTH0_AUDIENCE_API: https://dev-2hs23ctneffzulxg.us.auth0.com/api/v2/
+      AUTH_CLIENT_ID_API: CWVKPIeRoM5raGKuLrLKXXJWHFp26dS9
+      AUTH_CLIENT_SECRET_API: nvmqqnIFf4_N-QtR_PiHxlpLFWAz5e6KCJwaOmGqbfARME52d0Y-3g5bSF7VCSFT
+
     networks:
       - app-network
 

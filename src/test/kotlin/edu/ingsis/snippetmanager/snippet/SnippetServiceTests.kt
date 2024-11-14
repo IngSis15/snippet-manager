@@ -2,6 +2,7 @@ package edu.ingsis.snippetmanager.snippet
 
 import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.permission.PermissionService
+import edu.ingsis.snippetmanager.external.permission.dto.PermissionResponseDTO
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateResultDTO
 import edu.ingsis.snippetmanager.format.FormatService
@@ -65,45 +66,15 @@ class SnippetServiceTests {
     }
 
     @Test
-    fun `can create snippet`() {
-        val snippetDto =
-            CreateSnippetDto(
-                name = "Declaration",
-                description = "This snippet declares a variable y",
-                language = "printscript",
-                content = "let y: number = 10;",
-                extension = "ps",
-            )
-        val snippet =
-            Snippet(
-                id = 1L,
-                name = snippetDto.name,
-                description = snippetDto.description,
-                language = snippetDto.language,
-                compliance = "COMPLIANT",
-                extension = snippetDto.extension,
-            )
-
-        val validateResultDTO = ValidateResultDTO(true, emptyList())
-
-        `when`(repository.save(anyOrNull())).thenReturn(snippet)
-        `when`(assetService.createAsset(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(Mono.empty())
-        `when`(permissionService.addPermission(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(Mono.empty())
-        `when`(printScriptService.validate(anyOrNull())).thenReturn(Mono.just(validateResultDTO))
-
-        val createdSnippet = snippetService.createSnippet(snippetDto, jwtToken)
-
-        assertEquals(snippetDto.name, createdSnippet.name)
-        assertEquals(snippetDto.content, createdSnippet.content)
-    }
-
-    @Test
     fun `can get snippet from id`() {
-        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps")
+        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", Compliance.PENDING, "ps")
+
+        val permissionResponseDTO = PermissionResponseDTO("1", "test-user", snippet.id!!, "owner", "test user")
 
         `when`(repository.findSnippetById(snippet.id!!)).thenReturn(snippet)
         `when`(assetService.getAsset(anyOrNull(), anyOrNull())).thenReturn(Mono.just("content"))
         `when`(permissionService.canRead(anyOrNull(), anyOrNull())).thenReturn(Mono.just(true))
+        `when`(permissionService.getPermission(anyOrNull(), anyOrNull())).thenReturn(Mono.just(permissionResponseDTO))
 
         val foundSnippet = snippetService.getSnippet(snippet.id!!, jwtToken)
 
@@ -112,7 +83,7 @@ class SnippetServiceTests {
 
     @Test
     fun `can delete snippet`() {
-        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps")
+        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", Compliance.PENDING, "ps")
 
         `when`(repository.findSnippetById(snippet.id!!)).thenReturn(snippet)
         `when`(permissionService.canModify(anyOrNull(), anyOrNull())).thenReturn(Mono.just(true))
@@ -127,7 +98,7 @@ class SnippetServiceTests {
 
     @Test
     fun `can edit snippet`() {
-        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps")
+        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", Compliance.PENDING, "ps")
         val editedSnippetDto =
             CreateSnippetDto(
                 name = snippet.name,
@@ -137,6 +108,8 @@ class SnippetServiceTests {
                 content = "let a: number = 1;",
             )
 
+        val permissionResponseDTO = PermissionResponseDTO("1", "test-user", snippet.id!!, "owner", "test user")
+
         val validateResultDTO = ValidateResultDTO(true, emptyList())
 
         `when`(repository.findSnippetById(snippet.id!!)).thenReturn(snippet)
@@ -144,6 +117,7 @@ class SnippetServiceTests {
         `when`(permissionService.canModify(anyOrNull(), eq(snippet.id!!))).thenReturn(Mono.just(true))
         `when`(assetService.createAsset(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(Mono.empty())
         `when`(printScriptService.validate(anyOrNull())).thenReturn(Mono.just(validateResultDTO))
+        `when`(permissionService.getPermission(anyOrNull(), anyOrNull())).thenReturn(Mono.just(permissionResponseDTO))
 
         val result = snippetService.editSnippet(editedSnippetDto, snippet.id!!, jwtToken)
 

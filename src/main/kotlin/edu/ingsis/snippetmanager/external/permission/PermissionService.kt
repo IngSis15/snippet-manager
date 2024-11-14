@@ -55,6 +55,17 @@ class PermissionService(
             .onErrorReturn(WebClientResponseException.NotFound::class.java, false)
     }
 
+    override fun getPermission(
+        jwt: Jwt,
+        snippetId: Long,
+    ): Mono<PermissionResponseDTO> {
+        return webClient.get()
+            .uri("/permissions/user/snippet/$snippetId")
+            .headers { it.setBearerAuth(jwt.tokenValue) }
+            .retrieve()
+            .bodyToMono(PermissionResponseDTO::class.java)
+    }
+
     override fun addPermission(
         jwt: Jwt,
         snippetId: Long,

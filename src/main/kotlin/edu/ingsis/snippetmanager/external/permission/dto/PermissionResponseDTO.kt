@@ -5,4 +5,5 @@ data class PermissionResponseDTO(
     val userId: String,
     val snippetId: Long,
     val permissionType: String,
+    val username: String,
 )
