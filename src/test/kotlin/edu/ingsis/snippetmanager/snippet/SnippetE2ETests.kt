@@ -2,7 +2,6 @@ package edu.ingsis.snippetmanager.snippet
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
-import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -40,37 +39,6 @@ class SnippetE2ETests
                     .issuedAt(Instant.now())
                     .expiresAt(Instant.now().plusSeconds(3600))
                     .build()
-        }
-
-        @Test
-        fun `can get all snippets`() {
-            val snippets =
-                SnippetFixtures.all().map { snippet ->
-                    SnippetDto(
-                        id = snippet.id,
-                        name = snippet.name,
-                        description = snippet.description,
-                        language = snippet.language,
-                        version = snippet.version,
-                        extension = snippet.extension,
-                        content = SnippetFixtures.getContentFromName(snippet.name),
-                        permission = "VIEWER",
-                    )
-                }
-            mockMvc.post("/v1/snippet") {
-                contentType = MediaType.APPLICATION_JSON
-                content = objectMapper.writeValueAsString(snippets[0])
-                with(jwt().jwt(jwtToken))
-            }.andExpect { status { isCreated() } }
-
-            mockMvc.get("/v1/snippet") {
-                param("page", "0")
-                param("size", "10")
-                with(jwt().jwt(jwtToken))
-            }
-                .andExpect {
-                    status { isOk() }
-                }
         }
 
         @Test

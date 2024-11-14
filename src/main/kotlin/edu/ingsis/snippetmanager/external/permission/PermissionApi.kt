@@ -29,4 +29,9 @@ interface PermissionApi {
         snippetId: Long,
         permission: String,
     ): Mono<PermissionResponseDTO>
+
+    fun getPermission(
+        jwt: Jwt,
+        snippetId: Long,
+    ): Mono<PermissionResponseDTO>
 }

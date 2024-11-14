@@ -22,14 +22,6 @@ import org.springframework.web.multipart.MultipartFile
 class SnippetRoutes
     @Autowired
     constructor(private val service: SnippetService, private val testSnippetService: TestSnippetService) : SnippetRoutesSpec {
-        override fun getAllSnippets(
-            @RequestParam page: Int,
-            @RequestParam size: Int,
-        ): ResponseEntity<Page<SnippetDto>> {
-            val pageable: Pageable = PageRequest.of(page, size)
-            return ResponseEntity.ok(service.getAllSnippets(pageable))
-        }
-
         override fun getSnippet(
             @PathVariable id: Long,
             @AuthenticationPrincipal jwt: Jwt,

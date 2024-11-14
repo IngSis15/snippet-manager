@@ -2,6 +2,7 @@ package edu.ingsis.snippetmanager.snippet
 
 import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.permission.PermissionService
+import edu.ingsis.snippetmanager.external.permission.dto.PermissionResponseDTO
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.format.FormatService
 import edu.ingsis.snippetmanager.lint.LintService
@@ -38,11 +39,14 @@ class SnippetService
             if (!canRead) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
+            val permission =
+                permissionService.getPermission(jwt, id).block()
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not found")
             val snippet =
                 repository.findSnippetById(id)
                     ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
             val content = fetchSnippetContent(id)
-            return translate(snippet, content, "READ")
+            return translate(snippet, content, permission)
         }
 
         fun createSnippet(
@@ -58,8 +62,8 @@ class SnippetService
             formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
 
             assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
-            permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()
-            return translate(savedSnippet, snippetDto.content, "OWNER")
+            val permission = permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()!!
+            return translate(savedSnippet, snippetDto.content, permission)
         }
 
         fun createFromFile(
@@ -71,9 +75,10 @@ class SnippetService
             validateSnippetContent(content)
             val snippet = translate(snippetDto)
             val savedSnippet = repository.save(snippet)
+            val permission = permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()!!
             assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
-            savedSnippet.id?.let { permissionService.addPermission(jwt, it, "owner") }
-            return translate(savedSnippet, content, "owner")
+            savedSnippet.id?.let { permissionService.addPermission(jwt, it, "OWNER") }
+            return translate(savedSnippet, content, permission)
         }
 
         fun editSnippet(
@@ -86,6 +91,10 @@ class SnippetService
             if (!canModify) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
+
+            val permission =
+                permissionService.getPermission(jwt, id).block()
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not found")
 
             assetService.createAsset("snippets", id.toString(), snippetDto.content).block()
 
@@ -101,7 +110,7 @@ class SnippetService
                     ),
                 )
 
-            return translate(savedSnippet, snippetDto.content, "OWNER")
+            return translate(savedSnippet, snippetDto.content, permission)
         }
 
         fun editFromFile(
@@ -117,6 +126,10 @@ class SnippetService
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
 
+            val permission =
+                permissionService.getPermission(jwt, id).block()
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not found")
+
             val savedSnippet =
                 repository.save(
                     Snippet(
@@ -131,7 +144,7 @@ class SnippetService
 
             assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
 
-            return translate(savedSnippet, content, "OWNER")
+            return translate(savedSnippet, content, permission)
         }
 
         @Transactional
@@ -172,20 +185,13 @@ class SnippetService
                     val snippet = repository.findSnippetById(permission.snippetId)
                     snippet?.let {
                         val content = fetchSnippetContent(it.id!!)
-                        translate(it, content, permission.permissionType)
+                        translate(it, content, permission)
                     }
                 }
             val start = pageable.offset.toInt()
             val end = (start + pageable.pageSize).coerceAtMost(snippets.size)
             val pagedSnippets = snippets.subList(start, end)
             return PageImpl(pagedSnippets, pageable, snippets.size.toLong())
-        }
-
-        fun getAllSnippets(pageable: Pageable): Page<SnippetDto> {
-            return repository.findAll(pageable).map { snippet ->
-                val content = fetchSnippetContent(snippet.id!!)
-                translate(snippet, content, "READ")
-            }
         }
 
         fun updateFromString(
@@ -198,6 +204,10 @@ class SnippetService
             if (!canModify) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
+
+            val permissionResponse =
+                permissionService.getPermission(jwt, id).block()
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not found")
 
             val originalSnippet =
                 repository.findSnippetById(id)
@@ -217,7 +227,7 @@ class SnippetService
                     ),
                 )
 
-            return translate(savedSnippet, snippet, "OWNER")
+            return translate(savedSnippet, snippet, permissionResponse)
         }
 
         private fun translate(snippetDto: CreateSnippetDto) =
@@ -241,7 +251,7 @@ class SnippetService
         private fun translate(
             snippet: Snippet,
             content: String,
-            permission: String,
+            permissionResponse: PermissionResponseDTO,
         ) = SnippetDto(
             id = snippet.id,
             name = snippet.name,
@@ -250,6 +260,7 @@ class SnippetService
             version = snippet.version,
             content = content,
             extension = snippet.extension,
-            permission = permission,
+            permission = permissionResponse.permissionType,
+            username = permissionResponse.username,
         )
     }

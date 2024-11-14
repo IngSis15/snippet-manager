@@ -29,6 +29,7 @@ class TestController(
                 id = test.id,
                 expectedOutput = test.expectedOutput,
                 userInput = test.userInput,
+                testName = test.name,
             )
         return ResponseEntity.ok(response)
     }
@@ -56,5 +57,22 @@ class TestController(
     ): ResponseEntity<Void> {
         testService.deleteTest(id)
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/snippet/{snippetId}")
+    fun getTestsBySnippetId(
+        @PathVariable snippetId: Long,
+    ): ResponseEntity<List<TestResponse>> {
+        val tests = testService.getTestsBySnippetId(snippetId)
+        val response =
+            tests?.map {
+                TestResponse(
+                    id = it.id,
+                    expectedOutput = it.expectedOutput,
+                    userInput = it.userInput,
+                    testName = it.name,
+                )
+            }
+        return ResponseEntity.ok(response)
     }
 }
