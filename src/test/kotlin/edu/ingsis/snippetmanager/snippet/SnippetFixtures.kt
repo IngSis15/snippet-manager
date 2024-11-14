@@ -8,7 +8,7 @@ object SnippetFixtures {
                 name = "Declaration",
                 description = "This snippet declares a variable x",
                 language = "printscript",
-                version = "1.1",
+                compliance = Compliance.COMPLIANT.toString(),
                 extension = "ps",
             ),
             Snippet(
@@ -16,7 +16,7 @@ object SnippetFixtures {
                 name = "Hello World",
                 description = "Prints \"Hello, World!\"",
                 language = "printscript",
-                version = "1.1",
+                compliance = Compliance.COMPLIANT.toString(),
                 extension = "ps",
             ),
         )

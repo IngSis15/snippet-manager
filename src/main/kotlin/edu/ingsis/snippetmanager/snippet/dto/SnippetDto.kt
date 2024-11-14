@@ -5,7 +5,7 @@ data class SnippetDto(
     val name: String,
     val description: String,
     val language: String,
-    val version: String,
+    val compliance: String,
     val extension: String,
     val content: String,
     val permission: String,

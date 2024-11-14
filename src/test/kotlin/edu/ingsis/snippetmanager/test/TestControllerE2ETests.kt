@@ -1,5 +1,6 @@
 package edu.ingsis.snippetmanager.test
 
+import edu.ingsis.snippetmanager.snippet.Compliance
 import edu.ingsis.snippetmanager.snippet.Snippet
 import edu.ingsis.snippetmanager.snippet.SnippetRepository
 import edu.ingsis.snippetmanager.test.dto.CreateTestDTO
@@ -34,7 +35,7 @@ class TestControllerE2ETests {
                 name = "Test Snippet",
                 description = "A snippet for testing",
                 language = "printscript",
-                version = "1.1",
+                compliance = Compliance.PENDING.toString(),
                 extension = "ps",
             )
 
