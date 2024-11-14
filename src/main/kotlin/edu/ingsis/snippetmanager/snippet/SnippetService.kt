@@ -46,7 +46,7 @@ class SnippetService
                 repository.findSnippetById(id)
                     ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
             val content = fetchSnippetContent(id)
-            return translate(snippet, content, permission)
+            return translate(snippet, content, permission, snippet.compliance)
         }
 
         fun createSnippet(
@@ -63,7 +63,7 @@ class SnippetService
 
             assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
             val permission = permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()!!
-            return translate(savedSnippet, snippetDto.content, permission)
+            return translate(savedSnippet, snippetDto.content, permission, savedSnippet.compliance)
         }
 
         fun createFromFile(
@@ -80,7 +80,7 @@ class SnippetService
             savedSnippet.id?.let { permissionService.addPermission(jwt, it, "owner") }
             lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
             formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
-            return translate(savedSnippet, content, permission)
+            return translate(savedSnippet, content, permission, savedSnippet.compliance)
         }
 
         fun editSnippet(
@@ -94,6 +94,9 @@ class SnippetService
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
 
+            val permission =
+                permissionService.getPermission(jwt, id).block()
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not found")
             assetService.createAsset("snippets", id.toString(), snippetDto.content).block()
 
             val savedSnippet =
@@ -103,7 +106,7 @@ class SnippetService
                         snippetDto.name,
                         snippetDto.description,
                         snippetDto.language,
-                        snippetDto.version,
+                        Compliance.PENDING,
                         snippetDto.extension,
                     ),
                 )
@@ -111,7 +114,7 @@ class SnippetService
             lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
             formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
 
-            return translate(savedSnippet, snippetDto.content, "OWNER")
+            return translate(savedSnippet, snippetDto.content, permission, savedSnippet.compliance)
         }
 
         fun editFromFile(
@@ -138,7 +141,7 @@ class SnippetService
                         snippetDto.name,
                         snippetDto.description,
                         snippetDto.language,
-                        Compliance.PENDING.toString(),
+                        Compliance.PENDING,
                         snippetDto.extension,
                     ),
                 )
@@ -148,7 +151,7 @@ class SnippetService
             lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
             formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
 
-            return translate(savedSnippet, content, permission)
+            return translate(savedSnippet, content, permission, savedSnippet.compliance)
         }
 
         @Transactional
@@ -189,7 +192,7 @@ class SnippetService
                     val snippet = repository.findSnippetById(permission.snippetId)
                     snippet?.let {
                         val content = fetchSnippetContent(it.id!!)
-                        translate(it, content, permission)
+                        translate(it, content, permission, snippet.compliance)
                     }
                 }
             val start = pageable.offset.toInt()
@@ -226,7 +229,7 @@ class SnippetService
                         originalSnippet.name,
                         originalSnippet.description,
                         originalSnippet.language,
-                        Compliance.PENDING.toString(),
+                        Compliance.PENDING,
                         originalSnippet.extension,
                     ),
                 )
@@ -234,7 +237,7 @@ class SnippetService
             lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
             formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
 
-            return translate(savedSnippet, snippet, permissionResponse)
+            return translate(savedSnippet, snippet, permissionResponse, Compliance.PENDING)
         }
 
         fun updateLintingCompliance(
@@ -250,7 +253,7 @@ class SnippetService
                         name = snippet.name,
                         description = snippet.description,
                         language = snippet.language,
-                        compliance = complianceAssigned.toString(),
+                        compliance = complianceAssigned,
                         extension = snippet.extension,
                     ),
                 )
@@ -262,7 +265,7 @@ class SnippetService
                 name = snippetDto.name,
                 description = snippetDto.description,
                 language = snippetDto.language,
-                compliance = Compliance.PENDING.toString(),
+                compliance = Compliance.PENDING,
                 extension = snippetDto.extension,
             )
 
@@ -271,7 +274,7 @@ class SnippetService
                 name = snippetFileDto.name,
                 description = snippetFileDto.description,
                 language = snippetFileDto.language,
-                compliance = Compliance.PENDING.toString(),
+                compliance = Compliance.PENDING,
                 extension = snippetFileDto.extension,
             )
 
@@ -279,6 +282,7 @@ class SnippetService
             snippet: Snippet,
             content: String,
             permissionResponse: PermissionResponseDTO,
+            compliance: Compliance,
         ) = SnippetDto(
             id = snippet.id,
             name = snippet.name,
@@ -288,5 +292,6 @@ class SnippetService
             extension = snippet.extension,
             permission = permissionResponse.permissionType,
             username = permissionResponse.username,
+            compliance = compliance.toString(),
         )
     }

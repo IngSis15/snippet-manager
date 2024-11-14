@@ -67,7 +67,7 @@ class SnippetServiceTests {
 
     @Test
     fun `can get snippet from id`() {
-        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps")
+        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", Compliance.PENDING, "ps")
 
         val permissionResponseDTO = PermissionResponseDTO("1", "test-user", snippet.id!!, "owner", "test user")
 
@@ -83,7 +83,7 @@ class SnippetServiceTests {
 
     @Test
     fun `can delete snippet`() {
-        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps")
+        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", Compliance.PENDING, "ps")
 
         `when`(repository.findSnippetById(snippet.id!!)).thenReturn(snippet)
         `when`(permissionService.canModify(anyOrNull(), anyOrNull())).thenReturn(Mono.just(true))
@@ -98,7 +98,7 @@ class SnippetServiceTests {
 
     @Test
     fun `can edit snippet`() {
-        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", "1.1", "ps")
+        val snippet = Snippet(1L, "Snippet1", "Description1", "printscript", Compliance.PENDING, "ps")
         val editedSnippetDto =
             CreateSnippetDto(
                 name = snippet.name,

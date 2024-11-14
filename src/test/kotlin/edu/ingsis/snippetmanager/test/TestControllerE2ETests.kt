@@ -35,7 +35,7 @@ class TestControllerE2ETests {
                 name = "Test Snippet",
                 description = "A snippet for testing",
                 language = "printscript",
-                compliance = Compliance.PENDING.toString(),
+                compliance = Compliance.PENDING,
                 extension = "ps",
             )
 
