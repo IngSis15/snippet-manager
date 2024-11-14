@@ -25,6 +25,9 @@ class SnippetE2ETests
         @MockBean
         private lateinit var snippetService: SnippetService
 
+        @MockBean
+        private lateinit var testSnippetService: TestSnippetService
+
         private lateinit var jwtToken: Jwt
 
         @BeforeEach

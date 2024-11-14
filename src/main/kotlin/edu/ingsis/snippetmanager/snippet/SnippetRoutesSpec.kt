@@ -2,6 +2,7 @@ package edu.ingsis.snippetmanager.snippet
 
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
+import edu.ingsis.snippetmanager.snippet.dto.TestResponseDto
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.data.domain.Page
@@ -107,4 +108,11 @@ interface SnippetRoutesSpec {
         @AuthenticationPrincipal jwt: Jwt,
         @PathVariable id: Long,
     ): ResponseEntity<SnippetDto>
+
+    @GetMapping("/test/{testId}")
+    @Operation(summary = "Run test for snippet")
+    fun runTest(
+        @PathVariable testId: Long,
+        @AuthenticationPrincipal jwt: Jwt,
+    ): ResponseEntity<TestResponseDto>
 }

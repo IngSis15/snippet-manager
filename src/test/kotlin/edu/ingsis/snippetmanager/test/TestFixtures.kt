@@ -9,11 +9,13 @@ object TestFixtures {
                 snippet = snippet,
                 expectedOutput = listOf("Expected Output Line 1", "Expected Output Line 2"),
                 userInput = listOf("User Input Line 1", "User Input Line 2"),
+                name = "Test Name 1",
             ),
             Test(
                 snippet = snippet,
                 expectedOutput = listOf("Expected Output Line 3", "Expected Output Line 4"),
                 userInput = listOf("User Input Line 3", "User Input Line 4"),
+                name = "Test Name 2",
             ),
         )
 }
