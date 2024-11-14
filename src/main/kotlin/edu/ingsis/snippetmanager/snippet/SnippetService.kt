@@ -58,10 +58,11 @@ class SnippetService
             val snippet = translate(snippetDto)
             val savedSnippet = repository.save(snippet)
 
+            assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
+
             lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
             formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
 
-            assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
             val permission = permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()!!
             return translate(savedSnippet, snippetDto.content, permission, savedSnippet.compliance)
         }
