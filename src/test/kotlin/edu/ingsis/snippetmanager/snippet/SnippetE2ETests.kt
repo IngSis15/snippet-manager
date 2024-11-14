@@ -51,7 +51,7 @@ class SnippetE2ETests
                         name = snippet.name,
                         description = snippet.description,
                         language = snippet.language,
-                        version = snippet.version,
+                        compliance = snippet.compliance.toString(),
                         extension = snippet.extension,
                         content = SnippetFixtures.getContentFromName(snippet.name),
                         permission = "VIEWER",
@@ -93,7 +93,6 @@ class SnippetE2ETests
                     name = "Declaration",
                     description = "This snippet declares a variable y",
                     language = "printscript",
-                    version = "1.1",
                     content = "let y: number = 10;",
                     extension = "ps",
                 )
@@ -129,7 +128,6 @@ class SnippetE2ETests
                     name = snippet.name,
                     description = snippet.description,
                     language = snippet.language,
-                    version = snippet.version,
                     extension = snippet.extension,
                     content = "let a: number = 1;",
                 )

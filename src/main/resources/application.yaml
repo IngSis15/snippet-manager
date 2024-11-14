@@ -53,3 +53,5 @@ stream:
     key: "lint"
   format:
     key: "format"
+  status:
+    key: "status"

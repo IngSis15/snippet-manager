@@ -21,7 +21,7 @@ class RedisFormatSnippetProducer
         val logger: System.Logger = getLogger(FormatSnippetProducer::class.simpleName)
 
         override fun publishEvent(event: String) {
-            logger.log(System.Logger.Level.INFO, "Linting snippet: $event")
+            logger.log(System.Logger.Level.INFO, "Formatting snippet: $event")
             emit(event)
         }
     }
