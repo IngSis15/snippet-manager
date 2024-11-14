@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.stream.StreamReceiver
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 
 @Component
 @Profile("!test")
@@ -39,9 +40,11 @@ class LintStatusConsumer(
         Mono.fromRunnable<Unit> {
             snippetService.updateLintingCompliance(lintingResultDto.snippetId, lintingResultDto.ok)
         }
+            .publishOn(Schedulers.boundedElastic())
             .doOnError { e ->
                 logger.log(System.Logger.Level.ERROR, "Error updating linting compliance: ${e.message}", e)
             }
+            .subscribeOn(Schedulers.boundedElastic())
             .subscribe()
     }
 }
