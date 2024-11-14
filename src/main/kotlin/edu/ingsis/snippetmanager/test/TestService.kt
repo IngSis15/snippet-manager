@@ -29,6 +29,7 @@ class TestService(
                 snippet = snippet,
                 expectedOutput = dto.expectedOutput,
                 userInput = dto.userInput,
+                name = dto.name,
             )
 
         return testRepository.save(test)
