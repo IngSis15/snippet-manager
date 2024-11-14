@@ -11,6 +11,7 @@ import org.springframework.data.redis.connection.stream.ObjectRecord
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.stream.StreamReceiver
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
 
 @Component
 @Profile("!test")
@@ -34,6 +35,13 @@ class LintStatusConsumer(
             System.Logger.Level.INFO,
             "Updating linting compliance for snippet ${lintingResultDto.snippetId} to ${lintingResultDto.ok}",
         )
-        snippetService.updateLintingCompliance(lintingResultDto.snippetId, lintingResultDto.ok)
+
+        Mono.fromRunnable<Unit> {
+            snippetService.updateLintingCompliance(lintingResultDto.snippetId, lintingResultDto.ok)
+        }
+            .doOnError { e ->
+                logger.log(System.Logger.Level.ERROR, "Error updating linting compliance: ${e.message}", e)
+            }
+            .subscribe()
     }
 }
