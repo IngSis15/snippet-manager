@@ -1,4 +1,4 @@
-package edu.ingsis.snippetmanager.lint
+package edu.ingsis.snippetmanager.lint.producer
 
 import edu.ingsis.snippetmanager.redis.config.RedisStreamProducer
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,7 +21,7 @@ class RedisLintSnippetProducer
         val logger: System.Logger = getLogger(LintSnippetProducer::class.simpleName)
 
         override fun publishEvent(event: String) {
-            logger.log(System.Logger.Level.INFO, "Formatting snippet: $event")
+            logger.log(System.Logger.Level.INFO, "Linting snippet: $event")
             emit(event)
         }
     }

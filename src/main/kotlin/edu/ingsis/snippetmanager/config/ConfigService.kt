@@ -6,8 +6,8 @@ import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.permission.PermissionService
 import edu.ingsis.snippetmanager.format.FormatSnippetProducer
 import edu.ingsis.snippetmanager.format.dto.FormatSnippetDto
-import edu.ingsis.snippetmanager.lint.LintSnippetProducer
-import edu.ingsis.snippetmanager.lint.dto.LintSnippetDto
+import edu.ingsis.snippetmanager.lint.producer.LintSnippetProducer
+import edu.ingsis.snippetmanager.lint.producer.dto.LintSnippetDto
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
@@ -64,7 +64,7 @@ class ConfigService
                 return json.decodeFromString<LintingSchemaDTO>(config!!)
             } catch (e: ResponseStatusException) {
                 val defaultLintingConfig = ConfigFactory.defaultLintingRules()
-                assetService.createAsset("linting", userId, defaultLintingConfig).block()
+                assetService.createAsset("linting", sanitizedUserId, defaultLintingConfig).block()
                 return json.decodeFromString<LintingSchemaDTO>(defaultLintingConfig)
             }
         }
@@ -76,7 +76,7 @@ class ConfigService
                 return json.decodeFromString<FormattingSchemaDTO>(config!!)
             } catch (e: ResponseStatusException) {
                 val defaultFormattingRules = ConfigFactory.defaultFormattingRules()
-                assetService.createAsset("formatting", userId, defaultFormattingRules).block()
+                assetService.createAsset("formatting", sanitizedUserId, defaultFormattingRules).block()
                 return json.decodeFromString<FormattingSchemaDTO>(defaultFormattingRules)
             }
         }
@@ -85,7 +85,7 @@ class ConfigService
             userId: String,
             config: LintingSchemaDTO,
         ): LintingSchemaDTO {
-            assetService.createAsset("linting", userId, json.encodeToString(config)).block()
+            assetService.createAsset("linting", sanitizeUserId(userId), json.encodeToString(config)).block()
             return config
         }
 
@@ -93,7 +93,7 @@ class ConfigService
             userId: String,
             config: FormattingSchemaDTO,
         ): FormattingSchemaDTO {
-            assetService.createAsset("formatting", userId, json.encodeToString(config)).block()
+            assetService.createAsset("formatting", sanitizeUserId(userId), json.encodeToString(config)).block()
             return config
         }
 

@@ -13,6 +13,6 @@ class Snippet(
     val name: String,
     val description: String,
     val language: String,
-    val version: String,
+    val compliance: String,
     val extension: String,
 )

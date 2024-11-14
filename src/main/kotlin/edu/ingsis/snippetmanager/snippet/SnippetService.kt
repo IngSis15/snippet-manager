@@ -4,7 +4,7 @@ import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.permission.PermissionService
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.format.FormatService
-import edu.ingsis.snippetmanager.lint.LintService
+import edu.ingsis.snippetmanager.lint.producer.LintService
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
@@ -54,11 +54,13 @@ class SnippetService
             val snippet = translate(snippetDto)
             val savedSnippet = repository.save(snippet)
 
+            assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
+
+            permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()
+
             lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
             formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
 
-            assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
-            permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()
             return translate(savedSnippet, snippetDto.content, "OWNER")
         }
 
@@ -73,6 +75,8 @@ class SnippetService
             val savedSnippet = repository.save(snippet)
             assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
             savedSnippet.id?.let { permissionService.addPermission(jwt, it, "owner") }
+            lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
+            formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
             return translate(savedSnippet, content, "owner")
         }
 
@@ -96,10 +100,13 @@ class SnippetService
                         snippetDto.name,
                         snippetDto.description,
                         snippetDto.language,
-                        snippetDto.version,
+                        Compliance.PENDING.toString(),
                         snippetDto.extension,
                     ),
                 )
+
+            lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
+            formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
 
             return translate(savedSnippet, snippetDto.content, "OWNER")
         }
@@ -124,12 +131,15 @@ class SnippetService
                         snippetDto.name,
                         snippetDto.description,
                         snippetDto.language,
-                        snippetDto.version,
+                        Compliance.PENDING.toString(),
                         snippetDto.extension,
                     ),
                 )
 
             assetService.createAsset("snippets", savedSnippet.id.toString(), content).block()
+
+            lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
+            formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
 
             return translate(savedSnippet, content, "OWNER")
         }
@@ -212,12 +222,35 @@ class SnippetService
                         originalSnippet.name,
                         originalSnippet.description,
                         originalSnippet.language,
-                        originalSnippet.version,
+                        Compliance.PENDING.toString(),
                         originalSnippet.extension,
                     ),
                 )
 
+            lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
+            formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
+
             return translate(savedSnippet, snippet, "OWNER")
+        }
+
+        fun updateLintingCompliance(
+            snippetId: Long,
+            compliance: Boolean,
+        ) {
+            val snippet = repository.findSnippetById(snippetId)
+            val complianceAssigned = if (compliance) Compliance.COMPLIANT else Compliance.NON_COMPLIANT
+            snippet?.let {
+                repository.save(
+                    Snippet(
+                        id = snippet.id,
+                        name = snippet.name,
+                        description = snippet.description,
+                        language = snippet.language,
+                        compliance = complianceAssigned.toString(),
+                        extension = snippet.extension,
+                    ),
+                )
+            }
         }
 
         private fun translate(snippetDto: CreateSnippetDto) =
@@ -225,7 +258,7 @@ class SnippetService
                 name = snippetDto.name,
                 description = snippetDto.description,
                 language = snippetDto.language,
-                version = snippetDto.version,
+                compliance = Compliance.PENDING.toString(),
                 extension = snippetDto.extension,
             )
 
@@ -234,7 +267,7 @@ class SnippetService
                 name = snippetFileDto.name,
                 description = snippetFileDto.description,
                 language = snippetFileDto.language,
-                version = snippetFileDto.version,
+                compliance = Compliance.PENDING.toString(),
                 extension = snippetFileDto.extension,
             )
 
@@ -247,9 +280,9 @@ class SnippetService
             name = snippet.name,
             description = snippet.description,
             language = snippet.language,
-            version = snippet.version,
             content = content,
             extension = snippet.extension,
             permission = permission,
+            compliance = snippet.compliance,
         )
     }
