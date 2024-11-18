@@ -35,6 +35,9 @@ jobs:
           push: true
           tags: |
             ghcr.io/ingsis15/snippet-manager:latest
+          secrets: |
+            github_username=${{ github.actor }}
+            github_token=${{ secrets.GITHUB_TOKEN }}
 
       - name: Push to GitHub Packages Dev
         if: github.ref == 'refs/heads/dev'
@@ -44,6 +47,9 @@ jobs:
           push: true
           tags: |
             ghcr.io/ingsis15/snippet-manager:dev
+          secrets: |
+            github_username=${{ github.actor }}
+            github_token=${{ secrets.GITHUB_TOKEN }}
 
   deploy_dev:
     name: Deploy to dev VM

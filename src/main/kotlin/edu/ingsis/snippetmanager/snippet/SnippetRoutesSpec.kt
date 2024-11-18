@@ -2,11 +2,11 @@ package edu.ingsis.snippetmanager.snippet
 
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
+import edu.ingsis.snippetmanager.snippet.dto.StatusDto
 import edu.ingsis.snippetmanager.snippet.dto.TestResponseDto
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.data.domain.Page
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.multipart.MultipartFile
 
 @RequestMapping("v1/snippet")
 interface SnippetRoutesSpec {
@@ -61,31 +60,6 @@ interface SnippetRoutesSpec {
         @AuthenticationPrincipal jwt: Jwt,
     )
 
-    @PostMapping("/upload", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    @Operation(summary = "Upload snippet from file")
-    fun uploadSnippet(
-        @RequestParam name: String,
-        @RequestParam description: String,
-        @RequestParam language: String,
-        @RequestParam version: String,
-        @RequestParam extension: String,
-        @RequestParam file: MultipartFile,
-        @AuthenticationPrincipal jwt: Jwt,
-    ): ResponseEntity<SnippetDto>
-
-    @PostMapping("/upload/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    @Operation(summary = "Edit snippet from upload")
-    fun editUploadSnippet(
-        @RequestParam name: String,
-        @RequestParam description: String,
-        @RequestParam language: String,
-        @RequestParam version: String,
-        @RequestParam extension: String,
-        @RequestParam file: MultipartFile,
-        @PathVariable id: Long,
-        @AuthenticationPrincipal jwt: Jwt,
-    ): ResponseEntity<SnippetDto>
-
     @GetMapping("/user")
     @Operation(summary = "Get all snippets from user")
     fun getSnippetsByUser(
@@ -108,4 +82,10 @@ interface SnippetRoutesSpec {
         @PathVariable testId: Long,
         @AuthenticationPrincipal jwt: Jwt,
     ): ResponseEntity<TestResponseDto>
+
+    @PostMapping("/status")
+    @Operation(summary = "Update linting status")
+    fun updateLintStatus(
+        @RequestBody statusDto: StatusDto,
+    ): ResponseEntity<Unit>
 }
