@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import org.springframework.http.HttpMethod.GET
-import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.Customizer.withDefaults
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -33,9 +31,7 @@ class OAuth2ResourceServerSecurityConfiguration(
                 .requestMatchers("/health").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/").permitAll()
-                .requestMatchers(GET, "/snippet").hasAuthority("SCOPE_read:snippets")
-                .requestMatchers(GET, "/snippet/*").hasAuthority("SCOPE_read:snippets")
-                .requestMatchers(POST, "/snippet").hasAuthority("SCOPE_write:snippets")
+                .requestMatchers("/v1/snippet/status").permitAll()
                 .anyRequest().authenticated()
         }
             .oauth2ResourceServer { it.jwt(withDefaults()) }

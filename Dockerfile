@@ -9,8 +9,9 @@ COPY settings.gradle .
 
 COPY src src
 
-RUN ./gradlew build --no-daemon
-
+RUN --mount=type=secret,id=github_token,env=GITHUB_TOKEN,required \
+    --mount=type=secret,id=github_username,env=GITHUB_USERNAME,required \
+    ./gradlew build --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
 

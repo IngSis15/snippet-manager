@@ -80,13 +80,6 @@ services:
     environment:
       SERVER_PORT: 8080
 
-      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE}
-      AUTH_SERVER_URI: ${AUTH_SERVER_URI}
-      AUTH_CLIENT_ID: ${AUTH_CLIENT_ID}
-      AUTH_CLIENT_SECRET: ${AUTH_CLIENT_SECRET}
-    networks:
-      - app-network
-
   redis:
     container_name: "event-bus"
     image: redis:6-alpine

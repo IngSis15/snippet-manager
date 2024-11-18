@@ -1,8 +1,8 @@
 package edu.ingsis.snippetmanager.snippet
 
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
-import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetFileDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
+import edu.ingsis.snippetmanager.snippet.dto.StatusDto
 import edu.ingsis.snippetmanager.snippet.dto.TestResponseDto
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -14,14 +14,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.multipart.MultipartFile
 
 @RestController
 class SnippetRoutes
     @Autowired
-    constructor(private val service: SnippetService, private val testSnippetService: TestSnippetService) : SnippetRoutesSpec {
+    constructor(private val service: SnippetService, private val testSnippetService: TestSnippetService) :
+    SnippetRoutesSpec {
         override fun getSnippet(
             @PathVariable id: Long,
             @AuthenticationPrincipal jwt: Jwt,
@@ -51,56 +50,6 @@ class SnippetRoutes
             service.deleteSnippet(id, jwt)
         }
 
-        override fun uploadSnippet(
-            @RequestParam name: String,
-            @RequestParam description: String,
-            @RequestParam language: String,
-            @RequestParam version: String,
-            @RequestParam extension: String,
-            @RequestParam file: MultipartFile,
-            @AuthenticationPrincipal jwt: Jwt,
-        ): ResponseEntity<SnippetDto> {
-            return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(
-                    service.createFromFile(
-                        CreateSnippetFileDto(
-                            name,
-                            description,
-                            language,
-                            version,
-                        ),
-                        file,
-                        jwt,
-                    ),
-                )
-        }
-
-        override fun editUploadSnippet(
-            @RequestParam name: String,
-            @RequestParam description: String,
-            @RequestParam language: String,
-            @RequestParam version: String,
-            @RequestParam extension: String,
-            @RequestParam file: MultipartFile,
-            @PathVariable id: Long,
-            @AuthenticationPrincipal jwt: Jwt,
-        ): ResponseEntity<SnippetDto> {
-            return ResponseEntity.ok(
-                service.editFromFile(
-                    CreateSnippetFileDto(
-                        name,
-                        description,
-                        language,
-                        version,
-                    ),
-                    file,
-                    id,
-                    jwt,
-                ),
-            )
-        }
-
         override fun getSnippetsByUser(
             jwt: Jwt,
             page: Int,
@@ -123,5 +72,9 @@ class SnippetRoutes
             jwt: Jwt,
         ): ResponseEntity<TestResponseDto> {
             return ResponseEntity.ok(testSnippetService.runTest(testId, jwt))
+        }
+
+        override fun updateLintStatus(statusDto: StatusDto): ResponseEntity<Unit> {
+            return ResponseEntity.ok(service.updateLintingCompliance(statusDto))
         }
     }

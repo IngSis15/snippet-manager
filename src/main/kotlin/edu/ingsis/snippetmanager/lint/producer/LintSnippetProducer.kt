@@ -1,6 +1,6 @@
 package edu.ingsis.snippetmanager.lint.producer
 
-import edu.ingsis.snippetmanager.redis.config.RedisStreamProducer
+import org.austral.ingsis.redis.RedisStreamProducer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.RedisTemplate
