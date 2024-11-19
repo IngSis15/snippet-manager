@@ -29,6 +29,18 @@ class PermissionService(
             .bodyToFlux(PermissionResponseDTO::class.java)
     }
 
+    override fun getAllOwnerSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO> {
+        return webClient.get()
+            .uri { uriBuilder ->
+                uriBuilder.path("/permissions/permissionType")
+                    .queryParam("permissionType", "OWNER")
+                    .build()
+            }
+            .headers { it.setBearerAuth(jwt.tokenValue) }
+            .retrieve()
+            .bodyToFlux(PermissionResponseDTO::class.java)
+    }
+
     override fun canRead(
         jwt: Jwt,
         snippetId: Long,

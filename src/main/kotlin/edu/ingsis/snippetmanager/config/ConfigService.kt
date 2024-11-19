@@ -33,7 +33,7 @@ class ConfigService
             val userId = sanitizeUserId(jwt.subject)
             setLintingConfig(userId, config)
 
-            permissionService.getAllSnippetPermissions(jwt).toIterable().map { snippet ->
+            permissionService.getAllOwnerSnippetPermissions(jwt).toIterable().map { snippet ->
                 val lintSnippetDto = LintSnippetDto(snippet.snippetId, userId)
                 lintSnippetProducer.publishEvent(json.encodeToString(lintSnippetDto))
             }
@@ -48,7 +48,7 @@ class ConfigService
             val userId = sanitizeUserId(jwt.subject)
             setFormattingConfig(userId, config)
 
-            permissionService.getAllSnippetPermissions(jwt).toIterable().map { snippet ->
+            permissionService.getAllOwnerSnippetPermissions(jwt).toIterable().map { snippet ->
                 val formatSnippetDto = FormatSnippetDto(snippet.snippetId, userId)
                 formatSnippetProducer.publishEvent(json.encodeToString(formatSnippetDto))
             }
