@@ -88,4 +88,10 @@ interface SnippetRoutesSpec {
     fun updateLintStatus(
         @RequestBody statusDto: StatusDto,
     ): ResponseEntity<Unit>
+
+    @GetMapping("/format/{id}")
+    @Operation(summary = "Get formatted snippet")
+    fun formatSnippet(
+        @PathVariable id: Long,
+    ): ResponseEntity<String>
 }

@@ -1,4 +1,4 @@
-package edu.ingsis.snippetmanager.lint.producer
+package edu.ingsis.snippetmanager.lint
 
 import org.austral.ingsis.redis.RedisStreamProducer
 import org.springframework.beans.factory.annotation.Autowired

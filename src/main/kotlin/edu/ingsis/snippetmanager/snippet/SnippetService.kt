@@ -5,7 +5,7 @@ import edu.ingsis.snippetmanager.external.permission.PermissionService
 import edu.ingsis.snippetmanager.external.permission.dto.PermissionResponseDTO
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.format.FormatService
-import edu.ingsis.snippetmanager.lint.producer.LintService
+import edu.ingsis.snippetmanager.lint.LintService
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.StatusDto
@@ -200,6 +200,14 @@ class SnippetService
                     ),
                 )
             }
+        }
+
+        fun formatSnippet(snippetId: Long): String {
+            val formatted =
+                assetService.getAsset("formatted", snippetId.toString()).block()
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
+
+            return formatted
         }
 
         private fun translate(snippetDto: CreateSnippetDto) =

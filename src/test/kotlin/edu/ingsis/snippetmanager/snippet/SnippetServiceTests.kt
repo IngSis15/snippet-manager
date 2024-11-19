@@ -6,7 +6,7 @@ import edu.ingsis.snippetmanager.external.permission.dto.PermissionResponseDTO
 import edu.ingsis.snippetmanager.external.printscript.PrintScriptApi
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateResultDTO
 import edu.ingsis.snippetmanager.format.FormatService
-import edu.ingsis.snippetmanager.lint.producer.LintService
+import edu.ingsis.snippetmanager.lint.LintService
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach

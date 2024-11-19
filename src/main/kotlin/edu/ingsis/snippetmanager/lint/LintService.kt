@@ -1,7 +1,7 @@
-package edu.ingsis.snippetmanager.lint.producer
+package edu.ingsis.snippetmanager.lint
 
 import edu.ingsis.snippetmanager.config.ConfigService
-import edu.ingsis.snippetmanager.lint.producer.dto.LintSnippetDto
+import edu.ingsis.snippetmanager.lint.dto.LintSnippetDto
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
