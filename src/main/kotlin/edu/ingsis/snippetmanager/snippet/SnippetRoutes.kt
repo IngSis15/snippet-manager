@@ -77,4 +77,8 @@ class SnippetRoutes
         override fun updateLintStatus(statusDto: StatusDto): ResponseEntity<Unit> {
             return ResponseEntity.ok(service.updateLintingCompliance(statusDto))
         }
+
+        override fun formatSnippet(id: Long): ResponseEntity<String> {
+            return ResponseEntity.ok(service.formatSnippet(id))
+        }
     }

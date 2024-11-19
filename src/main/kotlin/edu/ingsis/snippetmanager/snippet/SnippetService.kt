@@ -202,6 +202,14 @@ class SnippetService
             }
         }
 
+        fun formatSnippet(snippetId: Long): String {
+            val formatted =
+                assetService.getAsset("formatted", snippetId.toString()).block()
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
+
+            return formatted
+        }
+
         private fun translate(snippetDto: CreateSnippetDto) =
             Snippet(
                 name = snippetDto.name,
