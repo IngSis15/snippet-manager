@@ -232,7 +232,7 @@ class SnippetService
             content = content,
             extension = snippet.extension,
             permission = permissionResponse.permissionType,
-            username = permissionResponse.username,
+            author = permissionResponse.username,
             compliance = compliance.toString(),
         )
     }
