@@ -9,5 +9,5 @@ data class SnippetDto(
     val extension: String,
     val content: String,
     val permission: String,
-    val username: String,
+    val author: String,
 )
