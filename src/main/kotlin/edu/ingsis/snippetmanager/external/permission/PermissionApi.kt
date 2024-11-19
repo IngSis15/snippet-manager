@@ -8,6 +8,8 @@ import reactor.core.publisher.Mono
 interface PermissionApi {
     fun getAllSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO>
 
+    fun getAllOwnerSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO>
+
     fun canRead(
         jwt: Jwt,
         snippetId: Long,
