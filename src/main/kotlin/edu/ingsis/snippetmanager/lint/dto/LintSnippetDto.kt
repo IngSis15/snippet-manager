@@ -1,4 +1,4 @@
-package edu.ingsis.snippetmanager.lint.producer.dto
+package edu.ingsis.snippetmanager.lint.dto
 
 import kotlinx.serialization.Serializable
 
