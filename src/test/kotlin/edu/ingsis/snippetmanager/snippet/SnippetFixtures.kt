@@ -1,17 +1,33 @@
 package edu.ingsis.snippetmanager.snippet
 
 object SnippetFixtures {
-    fun all(): List<Snippet> =
+    private val snippets =
         listOf(
             Snippet(
-                "Declaration",
-                "This snippet declares a variable x",
-                "let x: number = 5;",
+                id = 1L,
+                name = "Declaration",
+                description = "This snippet declares a variable x",
+                language = "printscript",
+                compliance = Compliance.COMPLIANT,
+                extension = "ps",
             ),
             Snippet(
-                "Hello World",
-                "Prints \"Hello, World!\"",
-                "println(\"Hello, World!\");",
+                id = 2L,
+                name = "Hello World",
+                description = "Prints \"Hello, World!\"",
+                language = "printscript",
+                compliance = Compliance.COMPLIANT,
+                extension = "ps",
             ),
         )
+
+    fun all(): List<Snippet> = snippets
+
+    fun getContentFromName(name: String): String {
+        return when (name) {
+            "Declaration" -> "let x: number = 10;"
+            "Hello World" -> "print(\"Hello, World!\")"
+            else -> throw IllegalArgumentException("Invalid snippet name")
+        }
+    }
 }

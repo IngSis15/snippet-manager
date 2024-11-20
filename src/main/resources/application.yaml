@@ -12,9 +12,46 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+    properties:
+        hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH_SERVER_URI}
+          client-id: ${AUTH_CLIENT_ID}
+          client-secret: ${AUTH_CLIENT_SECRET}
+  servlet:
+    multipart:
+      enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+auth0:
+  audience: ${AUTH0_AUDIENCE}
 
 springdoc:
   api-docs:
     enabled: true
   swagger-ui:
     enabled: true
+
+services:
+  printscript:
+    url: ${PRINTSCRIPT_HOST:http://localhost:9090}
+  asset:
+    url: ${ASSET_HOST:http://localhost:8081}
+  permission:
+    url: ${PERMISSION_HOST:http://localhost:8082}
+
+stream:
+  lint:
+    key: "lint"
+  format:
+    key: "format"
+  status:
+    key: "status"

@@ -7,10 +7,12 @@ import jakarta.persistence.Id
 
 @Entity
 class Snippet(
-    val title: String,
-    val description: String,
-    val content: String,
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     var id: Long? = null,
+    val name: String,
+    val description: String,
+    val language: String,
+    val compliance: Compliance,
+    val extension: String,
 )

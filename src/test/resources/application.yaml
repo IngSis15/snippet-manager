@@ -8,3 +8,19 @@ spring:
     username: sa
     password: password
     url: jdbc:h2:mem:testdb
+
+services:
+  printscript:
+    url: http://mocked-url-for-test
+  asset:
+    url: http://mocked-url-for-test
+  permission:
+    url: http://mocked-url-for-test
+
+stream:
+  lint:
+    key: "lint"
+  format:
+    key: "format"
+  status:
+    key: "status"
