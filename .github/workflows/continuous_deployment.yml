@@ -57,15 +57,11 @@ jobs:
     needs: push_to_registry
     uses: IngSis15/infra/.github/workflows/deploy.yml@main
     with:
-      environment: 'dev'
+      environment: "dev"
     secrets:
-      vm_resource_group: ${{ secrets.DEV_VM_RESOURCE_GROUP }}
-      vm_name: ${{ secrets.DEV_VM_NAME }}
       vm_username: ${{ secrets.DEV_VM_USERNAME }}
       vm_ip: ${{ secrets.DEV_VM_IP }}
       ssh_key: ${{ secrets.DEV_SSH_KEY }}
-      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-
 
   deploy_prod:
     name: Deploy to prod VM
@@ -73,11 +69,8 @@ jobs:
     needs: push_to_registry
     uses: IngSis15/infra/.github/workflows/deploy.yml@main
     with:
-      environment: 'prod'
+      environment: "prod"
     secrets:
-      vm_resource_group: ${{ secrets.VM_RESOURCE_GROUP }}
-      vm_name: ${{ secrets.VM_NAME }}
       vm_username: ${{ secrets.VM_USERNAME }}
       vm_ip: ${{ secrets.VM_IP }}
       ssh_key: ${{ secrets.SSH_KEY }}
-      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
