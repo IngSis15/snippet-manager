@@ -5,6 +5,7 @@ import edu.ingsis.snippetmanager.snippet.Snippet
 import edu.ingsis.snippetmanager.snippet.SnippetRepository
 import edu.ingsis.snippetmanager.test.dto.CreateTestDTO
 import edu.ingsis.snippetmanager.test.dto.UpdateTestDTO
+import jakarta.transaction.Transactional
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
@@ -114,6 +115,16 @@ class TestControllerE2ETests {
         client.get().uri("$BASE/${test.id}")
             .exchange()
             .expectStatus().isNotFound
+    }
+
+    @Transactional
+    @org.junit.jupiter.api.Test
+    fun `should get all Tests by id`() {
+        val test = testRepository.findAll()
+
+        client.get().uri("$BASE/snippet/${test.first().snippet.id}")
+            .exchange()
+            .expectStatus().isOk
     }
 
     companion object {
