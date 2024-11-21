@@ -2,11 +2,18 @@ package edu.ingsis.snippetmanager.snippet
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
+import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
+import edu.ingsis.snippetmanager.snippet.dto.StatusDto
+import edu.ingsis.snippetmanager.snippet.dto.TestResponseDto
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.eq
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.data.domain.PageImpl
 import org.springframework.http.MediaType
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtClaimNames
@@ -107,6 +114,138 @@ class SnippetE2ETests
             }
                 .andExpect {
                     status { isOk() }
+                }
+        }
+
+        @Test
+        fun `can get snippets by user`() {
+            // Arrange
+            val snippet1 = SnippetFixtures.all().first()
+            val snippet2 = SnippetFixtures.all().last()
+            val snippets = listOf(snippet1, snippet2)
+            val snippetsPage =
+                PageImpl(
+                    snippets.map {
+                        SnippetDto(
+                            id = it.id,
+                            name = "String",
+                            description = "String",
+                            language = "String",
+                            compliance = "String",
+                            extension = "String",
+                            content = "String",
+                            permission = "String",
+                            author = "String",
+                        )
+                    },
+                )
+
+            `when`(snippetService.getSnippetsByUser(any(), any())).thenReturn(snippetsPage)
+
+            // Act
+            mockMvc.get("/v1/snippet") {
+                param("page", "0")
+                param("size", "10")
+                with(jwt().jwt(jwtToken))
+            }
+                .andExpect {
+                    status { isOk() }
+                    content { contentType(MediaType.APPLICATION_JSON) }
+                    jsonPath("$.content.length()") { value(2) }
+                    jsonPath("$.content[0].id") { value(snippet1.id) }
+                    jsonPath("$.content[1].id") { value(snippet2.id) }
+                    // Additional assertions can be added here
+                }
+        }
+
+        @Test
+        fun `can update snippet from string`() {
+            // Arrange
+            val snippetId = 1L
+            val snippetContent = "let x = 10;"
+
+            val updatedSnippet = SnippetFixtures.all().first()
+            val updatedSnippetDto =
+                SnippetDto(
+                    id = updatedSnippet.id,
+                    name = "String",
+                    description = "String",
+                    language = "String",
+                    compliance = "String",
+                    extension = "String",
+                    content = snippetContent,
+                    permission = "String",
+                    author = "String",
+                )
+
+            `when`(snippetService.updateFromString(eq(snippetContent), any(), eq(snippetId))).thenReturn(updatedSnippetDto)
+
+            // Act
+            mockMvc.post("/v1/snippet/$snippetId/string") {
+                contentType = MediaType.TEXT_PLAIN
+                content = snippetContent
+                with(jwt().jwt(jwtToken))
+            }
+                .andExpect {
+                    status { isOk() }
+                    content { contentType(MediaType.APPLICATION_JSON) }
+                    jsonPath("$.id") { value(snippetId) }
+                    jsonPath("$.content") { value(snippetContent) }
+                    // Additional assertions can be added here
+                }
+        }
+
+        @Test
+        fun `can run test`() {
+            // Arrange
+            val testId = 1L
+            val testResponse = TestResponseDto(passed = true, expectedOutput = listOf("expected"), actualOutput = listOf("expected"))
+            `when`(testSnippetService.runTest(eq(testId), any())).thenReturn(testResponse)
+
+            // Act
+            mockMvc.post("/v1/snippet/test/$testId") {
+                with(jwt().jwt(jwtToken))
+            }
+                .andExpect {
+                    status { isOk() }
+                    content { contentType(MediaType.APPLICATION_JSON) }
+                    jsonPath("$.success") { value(true) }
+                    jsonPath("$.message") { value("Test passed") }
+                }
+        }
+
+        @Test
+        fun `can update lint status`() {
+            // Arrange
+            val statusDto = StatusDto(snippetId = 1L, compliance = Compliance.COMPLIANT)
+
+            `when`(snippetService.updateLintingCompliance(eq(statusDto))).thenAnswer { }
+
+            // Act
+            mockMvc.post("/v1/snippet/lint") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(statusDto)
+            }
+                .andExpect {
+                    status { isOk() }
+                }
+        }
+
+        @Test
+        fun `can get formatted snippet`() {
+            // Arrange
+            val snippetId = 1L
+            val formattedContent = "formatted snippet content"
+
+            `when`(snippetService.formatSnippet(eq(snippetId))).thenReturn(formattedContent)
+
+            // Act
+            mockMvc.get("/v1/snippet/$snippetId/formatted") {
+                with(jwt().jwt(jwtToken))
+            }
+                .andExpect {
+                    status { isOk() }
+                    content { string(formattedContent) }
                 }
         }
     }
