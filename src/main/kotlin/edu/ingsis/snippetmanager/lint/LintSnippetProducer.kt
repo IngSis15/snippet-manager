@@ -13,15 +13,21 @@ interface LintSnippetProducer {
 
 @Component
 class RedisLintSnippetProducer
-    @Autowired
-    constructor(
-        @Value("\${stream.lint.key}") streamKey: String,
-        redis: RedisTemplate<String, String>,
-    ) : LintSnippetProducer, RedisStreamProducer(streamKey, redis) {
-        val logger: System.Logger = getLogger(LintSnippetProducer::class.simpleName)
+@Autowired
+constructor(
+    @Value("\${stream.lint.key}") streamKey: String,
+    redis: RedisTemplate<String, String>,
+) : LintSnippetProducer, RedisStreamProducer(streamKey, redis) {
+    val logger: System.Logger = getLogger(LintSnippetProducer::class.simpleName)
 
-        override fun publishEvent(event: String) {
-            logger.log(System.Logger.Level.INFO, "Linting snippet: $event")
+    override fun publishEvent(event: String) {
+        logger.log(System.Logger.Level.INFO, "Publishing lint event to Redis stream: $event")
+        try {
             emit(event)
+            logger.log(System.Logger.Level.INFO, "Successfully published lint event: $event")
+        } catch (e: Exception) {
+            logger.log(System.Logger.Level.ERROR, "Failed to publish lint event: $event", e)
+            throw e
         }
     }
+}
