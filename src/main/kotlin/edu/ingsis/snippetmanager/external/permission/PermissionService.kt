@@ -22,7 +22,6 @@ class PermissionService(
     @PostConstruct
     fun init() {
         webClient = WebClient.create(baseUrl)
-        logger.info("Initialized WebClient with baseUrl: {}", baseUrl)
     }
 
     override fun getAllSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO> {
