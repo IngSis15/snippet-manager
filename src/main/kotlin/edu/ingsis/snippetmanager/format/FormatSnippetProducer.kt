@@ -18,10 +18,16 @@ class RedisFormatSnippetProducer
         @Value("\${stream.format.key}") streamKey: String,
         redis: RedisTemplate<String, String>,
     ) : FormatSnippetProducer, RedisStreamProducer(streamKey, redis) {
-        val logger: System.Logger = getLogger(FormatSnippetProducer::class.simpleName)
+    private val logger: System.Logger = getLogger(FormatSnippetProducer::class.simpleName)
 
-        override fun publishEvent(event: String) {
-            logger.log(System.Logger.Level.INFO, "Formatting snippet: $event")
+    override fun publishEvent(event: String) {
+        try {
+            logger.log(System.Logger.Level.INFO, "Publishing event to Redis stream: $streamKey, event: $event")
             emit(event)
+            logger.log(System.Logger.Level.INFO, "Event published successfully to Redis stream: $streamKey")
+        } catch (e: Exception) {
+            logger.log(System.Logger.Level.ERROR, "Failed to publish event to Redis stream: $streamKey, reason: ${e.message}", e)
+            throw e
         }
     }
+}
