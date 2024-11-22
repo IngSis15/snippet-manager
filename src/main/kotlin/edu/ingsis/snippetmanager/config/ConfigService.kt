@@ -30,111 +30,111 @@ class ConfigService
 
         private val logger: Logger = LoggerFactory.getLogger(ConfigService::class.java)
 
-    fun lintSnippets(
-        jwt: Jwt,
-        config: LintingSchemaDTO,
-    ): LintingSchemaDTO {
-        val userId = sanitizeUserId(jwt.subject)
-        logger.info("Received linting config request for userId: $userId")
+        fun lintSnippets(
+            jwt: Jwt,
+            config: LintingSchemaDTO,
+        ): LintingSchemaDTO {
+            val userId = sanitizeUserId(jwt.subject)
+            logger.info("Received linting config request for userId: $userId")
 
-        try {
-            setLintingConfig(userId, config)
+            try {
+                setLintingConfig(userId, config)
 
-            permissionService.getAllOwnerSnippetPermissions(jwt).toIterable().map { snippet ->
-                val lintSnippetDto = LintSnippetDto(snippet.snippetId, userId)
-                lintSnippetProducer.publishEvent(json.encodeToString(lintSnippetDto))
-                logger.debug("Published lint snippet event for snippetId: ${snippet.snippetId}")
+                permissionService.getAllOwnerSnippetPermissions(jwt).toIterable().map { snippet ->
+                    val lintSnippetDto = LintSnippetDto(snippet.snippetId, userId)
+                    lintSnippetProducer.publishEvent(json.encodeToString(lintSnippetDto))
+                    logger.debug("Published lint snippet event for snippetId: ${snippet.snippetId}")
+                }
+                return config
+            } catch (e: Exception) {
+                logger.error("Error while linting snippets for userId: $userId", e)
+                throw e
             }
-            return config
-        } catch (e: Exception) {
-            logger.error("Error while linting snippets for userId: $userId", e)
-            throw e
         }
-    }
 
-    fun formatSnippets(
-        jwt: Jwt,
-        config: FormattingSchemaDTO,
-    ): FormattingSchemaDTO {
-        val userId = sanitizeUserId(jwt.subject)
-        logger.info("Received formatting config request for userId: $userId")
+        fun formatSnippets(
+            jwt: Jwt,
+            config: FormattingSchemaDTO,
+        ): FormattingSchemaDTO {
+            val userId = sanitizeUserId(jwt.subject)
+            logger.info("Received formatting config request for userId: $userId")
 
-        try {
-            setFormattingConfig(userId, config)
+            try {
+                setFormattingConfig(userId, config)
 
-            permissionService.getAllOwnerSnippetPermissions(jwt).toIterable().map { snippet ->
-                val formatSnippetDto = FormatSnippetDto(snippet.snippetId, userId)
-                formatSnippetProducer.publishEvent(json.encodeToString(formatSnippetDto))
-                logger.debug("Published format snippet event for snippetId: ${snippet.snippetId}")
+                permissionService.getAllOwnerSnippetPermissions(jwt).toIterable().map { snippet ->
+                    val formatSnippetDto = FormatSnippetDto(snippet.snippetId, userId)
+                    formatSnippetProducer.publishEvent(json.encodeToString(formatSnippetDto))
+                    logger.debug("Published format snippet event for snippetId: ${snippet.snippetId}")
+                }
+                return config
+            } catch (e: Exception) {
+                logger.error("Error while formatting snippets for userId: $userId", e)
+                throw e
             }
-            return config
-        } catch (e: Exception) {
-            logger.error("Error while formatting snippets for userId: $userId", e)
-            throw e
         }
-    }
 
-    fun getLintingConfig(userId: String): LintingSchemaDTO {
-        val sanitizedUserId = sanitizeUserId(userId)
-        logger.info("Fetching linting config for userId: $sanitizedUserId")
+        fun getLintingConfig(userId: String): LintingSchemaDTO {
+            val sanitizedUserId = sanitizeUserId(userId)
+            logger.info("Fetching linting config for userId: $sanitizedUserId")
 
-        try {
-            val config = assetService.getAsset("linting", sanitizedUserId).block()
-            if (config == null) {
-                logger.info("No existing linting config found, creating default config for userId: $sanitizedUserId")
+            try {
+                val config = assetService.getAsset("linting", sanitizedUserId).block()
+                if (config == null) {
+                    logger.info("No existing linting config found, creating default config for userId: $sanitizedUserId")
+                    val defaultConfig = ConfigFactory.defaultLintingRules()
+                    assetService.createAsset("linting", sanitizedUserId, defaultConfig).block()
+                    return json.decodeFromString(defaultConfig)
+                } else {
+                    return json.decodeFromString(config)
+                }
+            } catch (e: ResponseStatusException) {
+                logger.error("Error fetching linting config for userId: $sanitizedUserId", e)
                 val defaultConfig = ConfigFactory.defaultLintingRules()
                 assetService.createAsset("linting", sanitizedUserId, defaultConfig).block()
                 return json.decodeFromString(defaultConfig)
-            } else {
-                return json.decodeFromString(config)
             }
-        } catch (e: ResponseStatusException) {
-            logger.error("Error fetching linting config for userId: $sanitizedUserId", e)
-            val defaultConfig = ConfigFactory.defaultLintingRules()
-            assetService.createAsset("linting", sanitizedUserId, defaultConfig).block()
-            return json.decodeFromString(defaultConfig)
         }
-    }
 
-    fun getFormattingConfig(userId: String): FormattingSchemaDTO {
-        val sanitizedUserId = sanitizeUserId(userId)
-        logger.info("Fetching formatting config for userId: $sanitizedUserId")
+        fun getFormattingConfig(userId: String): FormattingSchemaDTO {
+            val sanitizedUserId = sanitizeUserId(userId)
+            logger.info("Fetching formatting config for userId: $sanitizedUserId")
 
-        try {
-            val config = assetService.getAsset("formatting", sanitizedUserId).block()
-            if (config == null) {
-                logger.info("No existing formatting config found, creating default config for userId: $sanitizedUserId")
+            try {
+                val config = assetService.getAsset("formatting", sanitizedUserId).block()
+                if (config == null) {
+                    logger.info("No existing formatting config found, creating default config for userId: $sanitizedUserId")
+                    val defaultConfig = ConfigFactory.defaultFormattingRules()
+                    assetService.createAsset("formatting", sanitizedUserId, defaultConfig).block()
+                    return json.decodeFromString(defaultConfig)
+                } else {
+                    return json.decodeFromString(config)
+                }
+            } catch (e: ResponseStatusException) {
+                logger.error("Error fetching formatting config for userId: $sanitizedUserId", e)
                 val defaultConfig = ConfigFactory.defaultFormattingRules()
                 assetService.createAsset("formatting", sanitizedUserId, defaultConfig).block()
                 return json.decodeFromString(defaultConfig)
-            } else {
-                return json.decodeFromString(config)
             }
-        } catch (e: ResponseStatusException) {
-            logger.error("Error fetching formatting config for userId: $sanitizedUserId", e)
-            val defaultConfig = ConfigFactory.defaultFormattingRules()
-            assetService.createAsset("formatting", sanitizedUserId, defaultConfig).block()
-            return json.decodeFromString(defaultConfig)
+        }
+
+        fun setLintingConfig(
+            userId: String,
+            config: LintingSchemaDTO,
+        ): LintingSchemaDTO {
+            assetService.createAsset("linting", sanitizeUserId(userId), json.encodeToString(config)).block()
+            return config
+        }
+
+        fun setFormattingConfig(
+            userId: String,
+            config: FormattingSchemaDTO,
+        ): FormattingSchemaDTO {
+            assetService.createAsset("formatting", sanitizeUserId(userId), json.encodeToString(config)).block()
+            return config
+        }
+
+        private fun sanitizeUserId(userId: String): String {
+            return userId.replace("|", "")
         }
     }
-
-    fun setLintingConfig(
-        userId: String,
-        config: LintingSchemaDTO,
-    ): LintingSchemaDTO {
-        assetService.createAsset("linting", sanitizeUserId(userId), json.encodeToString(config)).block()
-        return config
-    }
-
-    fun setFormattingConfig(
-        userId: String,
-        config: FormattingSchemaDTO,
-    ): FormattingSchemaDTO {
-        assetService.createAsset("formatting", sanitizeUserId(userId), json.encodeToString(config)).block()
-        return config
-    }
-
-    private fun sanitizeUserId(userId: String): String {
-        return userId.replace("|", "")
-    }
-}

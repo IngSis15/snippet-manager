@@ -10,42 +10,46 @@ import java.lang.System.getLogger
 
 @Component
 class FormatService
-@Autowired
-constructor(
-    private val formatSnippetProducer: RedisFormatSnippetProducer,
-    private val configService: ConfigService,
-) {
-    private val logger: System.Logger = getLogger(FormatService::class.simpleName)
-
-    fun formatSnippet(
-        snippetId: Long,
-        userId: String,
+    @Autowired
+    constructor(
+        private val formatSnippetProducer: RedisFormatSnippetProducer,
+        private val configService: ConfigService,
     ) {
-        logger.log(System.Logger.Level.INFO, "Starting snippet formatting for snippetId: $snippetId, userId: $userId")
+        private val logger: System.Logger = getLogger(FormatService::class.simpleName)
 
-        try {
-            saveDefaultConfig(userId)
-            val sanitizedUserId = userId.replace("|", "")
-            val formatSnippetDto = FormatSnippetDto(snippetId, sanitizedUserId)
+        fun formatSnippet(
+            snippetId: Long,
+            userId: String,
+        ) {
+            logger.log(System.Logger.Level.INFO, "Starting snippet formatting for snippetId: $snippetId, userId: $userId")
 
-            logger.log(System.Logger.Level.DEBUG, "Publishing format event for snippetId: $snippetId, userId: $sanitizedUserId")
-            formatSnippetProducer.publishEvent(Json.encodeToString(formatSnippetDto))
+            try {
+                saveDefaultConfig(userId)
+                val sanitizedUserId = userId.replace("|", "")
+                val formatSnippetDto = FormatSnippetDto(snippetId, sanitizedUserId)
 
-            logger.log(System.Logger.Level.INFO, "Successfully published format event for snippetId: $snippetId")
-        } catch (e: Exception) {
-            logger.log(System.Logger.Level.ERROR, "Error while formatting snippet: ${e.message}", e)
-            throw e
+                logger.log(System.Logger.Level.DEBUG, "Publishing format event for snippetId: $snippetId, userId: $sanitizedUserId")
+                formatSnippetProducer.publishEvent(Json.encodeToString(formatSnippetDto))
+
+                logger.log(System.Logger.Level.INFO, "Successfully published format event for snippetId: $snippetId")
+            } catch (e: Exception) {
+                logger.log(System.Logger.Level.ERROR, "Error while formatting snippet: ${e.message}", e)
+                throw e
+            }
+        }
+
+        private fun saveDefaultConfig(userId: String) {
+            try {
+                logger.log(System.Logger.Level.DEBUG, "Fetching default formatting config for userId: $userId")
+                configService.getFormattingConfig(userId)
+                logger.log(System.Logger.Level.INFO, "Default formatting config fetched successfully for userId: $userId")
+            } catch (e: Exception) {
+                logger.log(
+                    System.Logger.Level.ERROR,
+                    "Failed formatting config for userId: $userId, reason: ${e.message}",
+                    e,
+                )
+                throw e
+            }
         }
     }
-
-    private fun saveDefaultConfig(userId: String) {
-        try {
-            logger.log(System.Logger.Level.DEBUG, "Fetching default formatting config for userId: $userId")
-            configService.getFormattingConfig(userId)
-            logger.log(System.Logger.Level.INFO, "Default formatting config fetched successfully for userId: $userId")
-        } catch (e: Exception) {
-            logger.log(System.Logger.Level.ERROR, "Failed to fetch default formatting config for userId: $userId, reason: ${e.message}", e)
-            throw e
-        }
-    }
-}

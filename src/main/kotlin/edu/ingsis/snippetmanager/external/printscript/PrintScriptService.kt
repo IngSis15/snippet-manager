@@ -4,16 +4,15 @@ import edu.ingsis.snippetmanager.external.printscript.dto.ExecuteRequestDto
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateResultDTO
 import edu.ingsis.snippetmanager.snippet.dto.ExecuteResultDto
 import jakarta.annotation.PostConstruct
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.core.publisher.Mono
-
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Mono
 
 @Component
 class PrintScriptService(
@@ -77,7 +76,12 @@ class PrintScriptService(
             .doOnSuccess { logger.info("Execution successful for snippetId: {}", snippetId) }
             .doOnError { ex ->
                 if (ex is WebClientResponseException) {
-                    logger.error("Execution failed for snippetId: {}, status: {}, body: {}", snippetId, ex.statusCode, ex.responseBodyAsString)
+                    logger.error(
+                        "Execution failed for snippetId: {}, status: {}, body: {}",
+                        snippetId,
+                        ex.statusCode,
+                        ex.responseBodyAsString,
+                    )
                 } else {
                     logger.error("Unexpected error during execution for snippetId: {}", snippetId, ex)
                 }

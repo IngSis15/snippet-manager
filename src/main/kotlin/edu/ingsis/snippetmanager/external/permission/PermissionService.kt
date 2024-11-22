@@ -52,7 +52,10 @@ class PermissionService(
             .doOnError { logger.error("Error fetching owner snippet permissions: {}", it.message) }
     }
 
-    override fun canRead(jwt: Jwt, snippetId: Long): Mono<Boolean> {
+    override fun canRead(
+        jwt: Jwt,
+        snippetId: Long,
+    ): Mono<Boolean> {
         logger.info("Checking read permission for snippetId={}", snippetId)
         return webClient.get()
             .uri("/permissions/user/snippet/$snippetId")
@@ -68,7 +71,10 @@ class PermissionService(
             .doOnError { logger.error("Error checking read permission for snippetId={}: {}", snippetId, it.message) }
     }
 
-    override fun canModify(jwt: Jwt, snippetId: Long): Mono<Boolean> {
+    override fun canModify(
+        jwt: Jwt,
+        snippetId: Long,
+    ): Mono<Boolean> {
         logger.info("Checking modify permission for snippetId={}", snippetId)
         return webClient.get()
             .uri("/permissions/user/snippet/$snippetId")
@@ -84,7 +90,10 @@ class PermissionService(
             .doOnError { logger.error("Error checking modify permission for snippetId={}: {}", snippetId, it.message) }
     }
 
-    override fun getPermission(jwt: Jwt, snippetId: Long): Mono<PermissionResponseDTO> {
+    override fun getPermission(
+        jwt: Jwt,
+        snippetId: Long,
+    ): Mono<PermissionResponseDTO> {
         logger.info("Fetching permission for snippetId={}", snippetId)
         return webClient.get()
             .uri("/permissions/user/snippet/$snippetId")
@@ -95,7 +104,11 @@ class PermissionService(
             .doOnError { logger.error("Error fetching permission for snippetId={}: {}", snippetId, it.message) }
     }
 
-    override fun addPermission(jwt: Jwt, snippetId: Long, permission: String): Mono<PermissionResponseDTO> {
+    override fun addPermission(
+        jwt: Jwt,
+        snippetId: Long,
+        permission: String,
+    ): Mono<PermissionResponseDTO> {
         logger.info("Adding permission: snippetId={}, permission={}", snippetId, permission)
         val requestBody = mapOf("snippetId" to snippetId, "permissionType" to permission)
 
@@ -109,7 +122,11 @@ class PermissionService(
             .doOnError { logger.error("Error adding permission for snippetId={}: {}", snippetId, it.message) }
     }
 
-    override fun removePermission(jwt: Jwt, snippetId: Long, permission: String): Mono<PermissionResponseDTO> {
+    override fun removePermission(
+        jwt: Jwt,
+        snippetId: Long,
+        permission: String,
+    ): Mono<PermissionResponseDTO> {
         logger.info("Removing permission: snippetId={}, permission={}", snippetId, permission)
         return webClient.delete()
             .uri { uriBuilder ->

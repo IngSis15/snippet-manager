@@ -14,7 +14,6 @@ import reactor.core.publisher.Mono
 class AssetService(
     @Value("\${services.asset.url}") val baseUrl: String,
 ) : AssetApi {
-
     private val logger: Logger = LoggerFactory.getLogger(AssetService::class.java)
     lateinit var webClient: WebClient
 
@@ -23,7 +22,10 @@ class AssetService(
         webClient = WebClient.create(baseUrl)
     }
 
-    override fun getAsset(container: String, key: String): Mono<String> {
+    override fun getAsset(
+        container: String,
+        key: String,
+    ): Mono<String> {
         logger.info("Fetching asset: container={}, key={}", container, key)
         return webClient.get()
             .uri("/v1/asset/$container/$key")
@@ -41,7 +43,11 @@ class AssetService(
             }
     }
 
-    override fun createAsset(container: String, key: String, content: String): Mono<Void> {
+    override fun createAsset(
+        container: String,
+        key: String,
+        content: String,
+    ): Mono<Void> {
         logger.info("Creating asset: container={}, key={}", container, key)
         return webClient.put()
             .uri("/v1/asset/$container/$key")
@@ -53,7 +59,10 @@ class AssetService(
             .then()
     }
 
-    override fun deleteAsset(container: String, key: String): Mono<Void> {
+    override fun deleteAsset(
+        container: String,
+        key: String,
+    ): Mono<Void> {
         logger.info("Deleting asset: container={}, key={}", container, key)
         return webClient.delete()
             .uri("/v1/asset/$container/$key")
