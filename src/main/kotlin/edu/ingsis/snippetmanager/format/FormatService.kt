@@ -21,7 +21,6 @@ class FormatService
             snippetId: Long,
             userId: String,
         ) {
-
             try {
                 saveDefaultConfig(userId)
                 val sanitizedUserId = userId.replace("|", "")
