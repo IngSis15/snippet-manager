@@ -21,7 +21,12 @@ class RedisLintSnippetProducer
         val logger: System.Logger = getLogger(LintSnippetProducer::class.simpleName)
 
         override fun publishEvent(event: String) {
-            logger.log(System.Logger.Level.INFO, "Linting snippet: $event")
-            emit(event)
+            try {
+                emit(event)
+                logger.log(System.Logger.Level.INFO, "Successfully published lint event: $event")
+            } catch (e: Exception) {
+                logger.log(System.Logger.Level.ERROR, "Failed to publish lint event: $event", e)
+                throw e
+            }
         }
     }

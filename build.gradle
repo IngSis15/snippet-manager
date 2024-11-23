@@ -87,6 +87,10 @@ kover {
 						"edu.ingsis.snippetmanager.security.*",
 						"edu.ingsis.snippetmanager.lint.*",
 						"edu.ingsis.snippetmanager.format.*",
+                        "edu.ingsis.snippetmanager.external",
+                        "edu.ingsis.snippetmanager.security",
+                        "edu.ingsis.snippetmanager.lint",
+                        "edu.ingsis.snippetmanager.format",
 				)
 			}
 		}

@@ -10,6 +10,7 @@ import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.StatusDto
 import jakarta.transaction.Transactional
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -30,12 +31,15 @@ class SnippetService
         private val lintService: LintService,
         private val formatService: FormatService,
     ) {
+        private val logger = LoggerFactory.getLogger(SnippetService::class.java)
+
         fun getSnippet(
             id: Long,
             jwt: Jwt,
         ): SnippetDto {
             val canRead = permissionService.canRead(jwt, id).block() ?: false
             if (!canRead) {
+                logger.warn("Permission denied for user: ${jwt.subject} to read snippet: $id")
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
             val permission =
@@ -45,6 +49,7 @@ class SnippetService
                 repository.findSnippetById(id)
                     ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
             val content = fetchSnippetContent(id)
+            logger.info("Successfully fetched snippet with ID: $id")
             return translate(snippet, content, permission, snippet.compliance)
         }
 
@@ -53,16 +58,15 @@ class SnippetService
             jwt: Jwt,
         ): SnippetDto {
             validateSnippetContent(snippetDto.content)
-
             val snippet = translate(snippetDto)
             val savedSnippet = repository.save(snippet)
+            logger.info("Snippet created with ID: ${savedSnippet.id}")
 
             assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
-
             lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
             formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
-
             val permission = permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()!!
+            logger.info("Snippet created and permissions assigned for ID: ${savedSnippet.id}")
             return translate(savedSnippet, snippetDto.content, permission, savedSnippet.compliance)
         }
 
@@ -107,11 +111,13 @@ class SnippetService
         ) {
             val canModify = permissionService.canModify(jwt, id).block() ?: false
             if (!canModify) {
+                logger.warn("Permission denied for user: ${jwt.subject} to delete snippet: $id")
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
             repository.deleteById(id)
             permissionService.removePermission(jwt, id, "OWNER").block()
             assetService.deleteAsset("snippets", id.toString()).block()
+            logger.info("Snippet with ID: $id successfully deleted")
         }
 
         private fun fetchSnippetContent(id: Long): String {
@@ -124,8 +130,10 @@ class SnippetService
                 printScriptService.validate(content).block()
                     ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating snippet")
             if (!validation.ok) {
+                logger.warn("Snippet content validation failed")
                 throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid snippet content")
             }
+            logger.info("Snippet content successfully validated")
         }
 
         fun getSnippetsByUser(
