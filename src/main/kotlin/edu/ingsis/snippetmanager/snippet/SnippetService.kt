@@ -165,32 +165,37 @@ class SnippetService
             jwt: Jwt,
             id: Long,
         ): SnippetDto {
-            logger.info("Updating snippet with ID: $id for user: ${jwt.subject}")
             validateSnippetContent(snippet)
             val canModify = permissionService.canModify(jwt, id).block() ?: false
             if (!canModify) {
-                logger.warn("Permission denied for user: ${jwt.subject} to update snippet: $id")
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
+
             val permissionResponse =
                 permissionService.getPermission(jwt, id).block()
                     ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not found")
+
+            val originalSnippet =
+                repository.findSnippetById(id)
+                    ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
+
             assetService.createAsset("snippets", id.toString(), snippet).block()
 
             val savedSnippet =
                 repository.save(
                     Snippet(
                         id,
-                        permissionResponse.snippetId.toString(),
-                        permissionResponse.snippetId.toString(),
-                        "language",
+                        originalSnippet.name,
+                        originalSnippet.description,
+                        originalSnippet.language,
                         Compliance.PENDING,
-                        "extension",
+                        originalSnippet.extension,
                     ),
                 )
+
             lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
             formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
-            logger.info("Snippet with ID: $id successfully updated")
+
             return translate(savedSnippet, snippet, permissionResponse, Compliance.PENDING)
         }
 
