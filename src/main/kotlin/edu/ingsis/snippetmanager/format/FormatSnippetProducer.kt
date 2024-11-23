@@ -22,7 +22,6 @@ class RedisFormatSnippetProducer
 
         override fun publishEvent(event: String) {
             try {
-                logger.log(System.Logger.Level.INFO, "Publishing event to Redis stream: $streamKey, event: $event")
                 emit(event)
                 logger.log(System.Logger.Level.INFO, "Event published successfully to Redis stream: $streamKey")
             } catch (e: Exception) {

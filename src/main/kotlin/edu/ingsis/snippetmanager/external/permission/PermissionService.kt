@@ -25,7 +25,6 @@ class PermissionService(
     }
 
     override fun getAllSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO> {
-        logger.info("Fetching all snippet permissions for user")
         return webClient.get()
             .uri("/permissions/user")
             .headers { it.setBearerAuth(jwt.tokenValue) }
@@ -37,7 +36,6 @@ class PermissionService(
     }
 
     override fun getAllOwnerSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO> {
-        logger.info("Fetching owner snippet permissions for user")
         return webClient.get()
             .uri { uriBuilder ->
                 uriBuilder.path("/permissions/permissionType")
@@ -56,7 +54,6 @@ class PermissionService(
         jwt: Jwt,
         snippetId: Long,
     ): Mono<Boolean> {
-        logger.info("Checking read permission for snippetId={}", snippetId)
         return webClient.get()
             .uri("/permissions/user/snippet/$snippetId")
             .headers { it.setBearerAuth(jwt.tokenValue) }
@@ -75,7 +72,6 @@ class PermissionService(
         jwt: Jwt,
         snippetId: Long,
     ): Mono<Boolean> {
-        logger.info("Checking modify permission for snippetId={}", snippetId)
         return webClient.get()
             .uri("/permissions/user/snippet/$snippetId")
             .headers { it.setBearerAuth(jwt.tokenValue) }
@@ -94,7 +90,6 @@ class PermissionService(
         jwt: Jwt,
         snippetId: Long,
     ): Mono<PermissionResponseDTO> {
-        logger.info("Fetching permission for snippetId={}", snippetId)
         return webClient.get()
             .uri("/permissions/user/snippet/$snippetId")
             .headers { it.setBearerAuth(jwt.tokenValue) }
@@ -109,7 +104,6 @@ class PermissionService(
         snippetId: Long,
         permission: String,
     ): Mono<PermissionResponseDTO> {
-        logger.info("Adding permission: snippetId={}, permission={}", snippetId, permission)
         val requestBody = mapOf("snippetId" to snippetId, "permissionType" to permission)
 
         return webClient.post()
@@ -127,7 +121,6 @@ class PermissionService(
         snippetId: Long,
         permission: String,
     ): Mono<PermissionResponseDTO> {
-        logger.info("Removing permission: snippetId={}, permission={}", snippetId, permission)
         return webClient.delete()
             .uri { uriBuilder ->
                 uriBuilder.path("/permissions/user/snippet/{snippetId}")

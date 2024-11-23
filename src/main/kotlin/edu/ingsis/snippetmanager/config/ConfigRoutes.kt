@@ -35,10 +35,7 @@ class ConfigRoutes
             jwt: Jwt,
             config: LintingSchemaDTO,
         ): ResponseEntity<LintingSchemaDTO> {
-            val userId = jwt.subject
-            logger.info("Setting linting config for userId: $userId")
             val result = service.lintSnippets(jwt, config)
-            logger.info("Linting config set for userId: $userId")
             return ResponseEntity.ok(result)
         }
 
@@ -46,10 +43,7 @@ class ConfigRoutes
             jwt: Jwt,
             config: FormattingSchemaDTO,
         ): ResponseEntity<FormattingSchemaDTO> {
-            val userId = jwt.subject
-            logger.info("Setting formatting config for userId: $userId")
             val result = service.formatSnippets(jwt, config)
-            logger.info("Formatting config set for userId: $userId")
             return ResponseEntity.ok(result)
         }
     }

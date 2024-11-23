@@ -35,8 +35,6 @@ class ConfigService
             config: LintingSchemaDTO,
         ): LintingSchemaDTO {
             val userId = sanitizeUserId(jwt.subject)
-            logger.info("Received linting config request for userId: $userId")
-
             try {
                 setLintingConfig(userId, config)
 
@@ -57,8 +55,6 @@ class ConfigService
             config: FormattingSchemaDTO,
         ): FormattingSchemaDTO {
             val userId = sanitizeUserId(jwt.subject)
-            logger.info("Received formatting config request for userId: $userId")
-
             try {
                 setFormattingConfig(userId, config)
 
@@ -76,8 +72,6 @@ class ConfigService
 
         fun getLintingConfig(userId: String): LintingSchemaDTO {
             val sanitizedUserId = sanitizeUserId(userId)
-            logger.info("Fetching linting config for userId: $sanitizedUserId")
-
             try {
                 val config = assetService.getAsset("linting", sanitizedUserId).block()
                 if (config == null) {
@@ -98,8 +92,6 @@ class ConfigService
 
         fun getFormattingConfig(userId: String): FormattingSchemaDTO {
             val sanitizedUserId = sanitizeUserId(userId)
-            logger.info("Fetching formatting config for userId: $sanitizedUserId")
-
             try {
                 val config = assetService.getAsset("formatting", sanitizedUserId).block()
                 if (config == null) {

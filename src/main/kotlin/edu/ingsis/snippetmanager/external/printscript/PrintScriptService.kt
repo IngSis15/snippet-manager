@@ -35,8 +35,6 @@ class PrintScriptService(
             return Mono.error(IllegalStateException("Missing authentication token"))
         }
 
-        logger.debug("Sending validate request to /v1/validate with content length: {}", content.length)
-
         return webClient.post()
             .uri("/v1/validate")
             .headers { it.setBearerAuth(token) }
@@ -65,7 +63,6 @@ class PrintScriptService(
         }
 
         val dto = ExecuteRequestDto("snippets", snippetId.toString(), input)
-        logger.debug("Sending execute request for snippetId: {} with input size: {}", snippetId, input.size)
 
         return webClient.post()
             .uri("/v1/execute")

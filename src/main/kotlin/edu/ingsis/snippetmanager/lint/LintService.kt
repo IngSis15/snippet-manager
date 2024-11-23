@@ -21,7 +21,6 @@ class LintService
             snippetId: Long,
             userId: String,
         ) {
-            logger.log(System.Logger.Level.INFO, "Starting linting process for snippetId: $snippetId, userId: $userId")
             try {
                 saveDefaultConfig(userId)
                 val lintSnippetDto = LintSnippetDto(snippetId, userId.replace("|", ""))

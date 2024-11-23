@@ -17,7 +17,6 @@ class TestService(
     private val logger = LoggerFactory.getLogger(TestService::class.java)
 
     fun getTestById(id: Long): Test {
-        logger.info("Fetching test with ID: {}", id)
         return testRepository.findById(id)
             .orElseThrow {
                 logger.error("Test with ID {} not found", id)
@@ -27,7 +26,6 @@ class TestService(
 
     @Transactional
     fun createTest(dto: CreateTestDTO): Test {
-        logger.info("Creating test for snippet ID: {}", dto.snippetId)
         val snippet =
             snippetRepository.findSnippetById(dto.snippetId)
                 ?: run {
@@ -53,7 +51,6 @@ class TestService(
         id: Long,
         dto: UpdateTestDTO,
     ): Test {
-        logger.info("Updating test with ID: {}", id)
         val test =
             testRepository.findById(id)
                 .orElseThrow {
@@ -74,7 +71,6 @@ class TestService(
 
     @Transactional
     fun deleteTest(id: Long) {
-        logger.info("Deleting test with ID: {}", id)
         if (!testRepository.existsById(id)) {
             logger.error("Test with ID {} not found", id)
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "Test not found")
@@ -84,7 +80,6 @@ class TestService(
     }
 
     fun getTestsBySnippetId(snippetId: Long): List<Test>? {
-        logger.info("Fetching tests for snippet ID: {}", snippetId)
         return testRepository.findAllBySnippetId(snippetId).also {
             logger.info("Found {} tests for snippet ID {}", it?.size ?: 0, snippetId)
         }

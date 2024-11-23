@@ -37,7 +37,6 @@ class SnippetService
             id: Long,
             jwt: Jwt,
         ): SnippetDto {
-            logger.info("Fetching snippet with ID: $id for user: ${jwt.subject}")
             val canRead = permissionService.canRead(jwt, id).block() ?: false
             if (!canRead) {
                 logger.warn("Permission denied for user: ${jwt.subject} to read snippet: $id")
@@ -58,7 +57,6 @@ class SnippetService
             snippetDto: CreateSnippetDto,
             jwt: Jwt,
         ): SnippetDto {
-            logger.info("Creating snippet for user: ${jwt.subject}")
             validateSnippetContent(snippetDto.content)
             val snippet = translate(snippetDto)
             val savedSnippet = repository.save(snippet)
@@ -111,7 +109,6 @@ class SnippetService
             id: Long,
             jwt: Jwt,
         ) {
-            logger.info("Deleting snippet with ID: $id for user: ${jwt.subject}")
             val canModify = permissionService.canModify(jwt, id).block() ?: false
             if (!canModify) {
                 logger.warn("Permission denied for user: ${jwt.subject} to delete snippet: $id")
@@ -124,13 +121,11 @@ class SnippetService
         }
 
         private fun fetchSnippetContent(id: Long): String {
-            logger.info("Fetching content for snippet ID: $id")
             return assetService.getAsset("snippets", id.toString()).block()
                 ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet content not found")
         }
 
         private fun validateSnippetContent(content: String) {
-            logger.info("Validating snippet content")
             val validation =
                 printScriptService.validate(content).block()
                     ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating snippet")

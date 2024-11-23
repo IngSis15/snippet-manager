@@ -21,14 +21,12 @@ class FormatService
             snippetId: Long,
             userId: String,
         ) {
-            logger.log(System.Logger.Level.INFO, "Starting snippet formatting for snippetId: $snippetId, userId: $userId")
 
             try {
                 saveDefaultConfig(userId)
                 val sanitizedUserId = userId.replace("|", "")
                 val formatSnippetDto = FormatSnippetDto(snippetId, sanitizedUserId)
 
-                logger.log(System.Logger.Level.DEBUG, "Publishing format event for snippetId: $snippetId, userId: $sanitizedUserId")
                 formatSnippetProducer.publishEvent(Json.encodeToString(formatSnippetDto))
 
                 logger.log(System.Logger.Level.INFO, "Successfully published format event for snippetId: $snippetId")
@@ -40,7 +38,6 @@ class FormatService
 
         private fun saveDefaultConfig(userId: String) {
             try {
-                logger.log(System.Logger.Level.DEBUG, "Fetching default formatting config for userId: $userId")
                 configService.getFormattingConfig(userId)
                 logger.log(System.Logger.Level.INFO, "Default formatting config fetched successfully for userId: $userId")
             } catch (e: Exception) {
