@@ -58,6 +58,7 @@ jobs:
     uses: IngSis15/infra/.github/workflows/deploy.yml@main
     with:
       environment: "dev"
+      service_name: "snippet-manager"
     secrets:
       vm_username: ${{ secrets.DEV_VM_USERNAME }}
       vm_ip: ${{ secrets.DEV_VM_IP }}
@@ -70,6 +71,7 @@ jobs:
     uses: IngSis15/infra/.github/workflows/deploy.yml@main
     with:
       environment: "prod"
+      service_name: "snippet-manager"
     secrets:
       vm_username: ${{ secrets.VM_USERNAME }}
       vm_ip: ${{ secrets.VM_IP }}

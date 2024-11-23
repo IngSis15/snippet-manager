@@ -16,6 +16,15 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# Run Kover coverage check
+./gradlew koverVerify
+
+# Check if Kover coverage check passed
+if [ $? -ne 0 ]; then
+  echo "Kover coverage check failed. Please fix the issues before committing."
+  exit 1
+fi
+
 for file in $CHANGED_FILES; do
     if test -f "$file"; then
       git add $file
