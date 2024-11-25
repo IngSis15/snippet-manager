@@ -1,6 +1,8 @@
 package edu.ingsis.snippetmanager.external.asset
 
 import jakarta.annotation.PostConstruct
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
@@ -12,6 +14,7 @@ import reactor.core.publisher.Mono
 class AssetService(
     @Value("\${services.asset.url}") val baseUrl: String,
 ) : AssetApi {
+    private val logger: Logger = LoggerFactory.getLogger(AssetService::class.java)
     lateinit var webClient: WebClient
 
     @PostConstruct
@@ -26,11 +29,15 @@ class AssetService(
         return webClient.get()
             .uri("/v1/asset/$container/$key")
             .retrieve()
-            .onStatus({ it.is4xxClientError || it.is5xxServerError }) {
-                Mono.error(ResponseStatusException(it.statusCode(), "Error while fetching asset"))
+            .onStatus({ it.is4xxClientError || it.is5xxServerError }) { response ->
+                val status = response.statusCode()
+                logger.error("Error fetching asset: container={}, key={}, status={}", container, key, status)
+                Mono.error(ResponseStatusException(status, "Error while fetching asset"))
             }
             .bodyToMono(String::class.java)
-            .onErrorResume {
+            .doOnNext { logger.info("Successfully fetched asset: container={}, key={}", container, key) }
+            .onErrorResume { error ->
+                logger.error("Error occurred while fetching asset: container={}, key={}, error={}", container, key, error.message)
                 Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Asset not found"))
             }
     }
@@ -45,6 +52,8 @@ class AssetService(
             .bodyValue(content)
             .retrieve()
             .toBodilessEntity()
+            .doOnSuccess { logger.info("Successfully created asset: container={}, key={}", container, key) }
+            .doOnError { error -> logger.error("Error creating asset: container={}, key={}, error={}", container, key, error.message) }
             .then()
     }
 
@@ -56,6 +65,8 @@ class AssetService(
             .uri("/v1/asset/$container/$key")
             .retrieve()
             .toBodilessEntity()
+            .doOnSuccess { logger.info("Successfully deleted asset: container={}, key={}", container, key) }
+            .doOnError { error -> logger.error("Error deleting asset: container={}, key={}, error={}", container, key, error.message) }
             .then()
     }
 }

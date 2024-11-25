@@ -6,6 +6,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.lang.System.getLogger
 
 @Component
 class LintService
@@ -14,13 +15,21 @@ class LintService
         private val lintSnippetProducer: LintSnippetProducer,
         private val configService: ConfigService,
     ) {
+        private val logger: System.Logger = getLogger(LintService::class.simpleName)
+
         fun lintSnippet(
             snippetId: Long,
             userId: String,
         ) {
-            saveDefaultConfig(userId)
-            val lintSnippetDto = LintSnippetDto(snippetId, userId.replace("|", ""))
-            lintSnippetProducer.publishEvent(Json.encodeToString(lintSnippetDto))
+            try {
+                saveDefaultConfig(userId)
+                val lintSnippetDto = LintSnippetDto(snippetId, userId.replace("|", ""))
+                lintSnippetProducer.publishEvent(Json.encodeToString(lintSnippetDto))
+                logger.log(System.Logger.Level.INFO, "Linting process completed for snippetId: $snippetId")
+            } catch (e: Exception) {
+                logger.log(System.Logger.Level.ERROR, "Error during linting process for snippetId: $snippetId, userId: $userId", e)
+                throw e
+            }
         }
 
         private fun saveDefaultConfig(userId: String) {
