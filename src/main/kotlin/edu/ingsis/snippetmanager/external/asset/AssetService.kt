@@ -1,5 +1,7 @@
 package edu.ingsis.snippetmanager.external.asset
 
+import edu.ingsis.snippetmanager.server.utils.LogTypes
+import edu.ingsis.snippetmanager.server.utils.MdcLoggingUtils.logWithMdc
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
+import reactor.core.publisher.Signal
 
 @Service
 class AssetService(
@@ -31,13 +34,38 @@ class AssetService(
             .retrieve()
             .onStatus({ it.is4xxClientError || it.is5xxServerError }) { response ->
                 val status = response.statusCode()
-                logger.error("Error fetching asset: container={}, key={}, status={}", container, key, status)
+                val errorSignal = Signal.error<String>(ResponseStatusException(status, "Error while fetching asset"))
+
+                logWithMdc(
+                    errorSignal,
+                    LogTypes.ERROR,
+                    logger,
+                    "Error fetching asset: container=$container, key=$key, status=$status",
+                )
+
                 Mono.error(ResponseStatusException(status, "Error while fetching asset"))
             }
             .bodyToMono(String::class.java)
-            .doOnNext { logger.info("Successfully fetched asset: container={}, key={}", container, key) }
+            .doOnNext {
+                val successSignal = Signal.next(it)
+
+                logWithMdc(
+                    successSignal,
+                    LogTypes.INFO,
+                    logger,
+                    "Successfully fetched asset: container=$container, key=$key",
+                )
+            }
             .onErrorResume { error ->
-                logger.error("Error occurred while fetching asset: container={}, key={}, error={}", container, key, error.message)
+                val errorSignal = Signal.error<String>(error)
+
+                logWithMdc(
+                    errorSignal,
+                    LogTypes.ERROR,
+                    logger,
+                    "Error occurred while fetching asset: container=$container, key=$key, error=${error.message}",
+                )
+
                 Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Asset not found"))
             }
     }
@@ -52,8 +80,26 @@ class AssetService(
             .bodyValue(content)
             .retrieve()
             .toBodilessEntity()
-            .doOnSuccess { logger.info("Successfully created asset: container={}, key={}", container, key) }
-            .doOnError { error -> logger.error("Error creating asset: container={}, key={}, error={}", container, key, error.message) }
+            .doOnSuccess {
+                val successSignal = Signal.next(it)
+
+                logWithMdc(
+                    successSignal,
+                    LogTypes.INFO,
+                    logger,
+                    "Successfully created asset: container=$container, key=$key",
+                )
+            }
+            .doOnError { error ->
+                val errorSignal = Signal.error<Void>(error)
+
+                logWithMdc(
+                    errorSignal,
+                    LogTypes.ERROR,
+                    logger,
+                    "Error creating asset: container=$container, key=$key, error=${error.message}",
+                )
+            }
             .then()
     }
 
@@ -65,8 +111,26 @@ class AssetService(
             .uri("/v1/asset/$container/$key")
             .retrieve()
             .toBodilessEntity()
-            .doOnSuccess { logger.info("Successfully deleted asset: container={}, key={}", container, key) }
-            .doOnError { error -> logger.error("Error deleting asset: container={}, key={}, error={}", container, key, error.message) }
+            .doOnSuccess {
+                val successSignal = Signal.next(it)
+
+                logWithMdc(
+                    successSignal,
+                    LogTypes.INFO,
+                    logger,
+                    "Successfully deleted asset: container=$container, key=$key",
+                )
+            }
+            .doOnError { error ->
+                val errorSignal = Signal.error<Void>(error)
+
+                logWithMdc(
+                    errorSignal,
+                    LogTypes.ERROR,
+                    logger,
+                    "Error deleting asset: container=$container, key=$key, error=${error.message}",
+                )
+            }
             .then()
     }
 }

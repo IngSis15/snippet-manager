@@ -21,10 +21,9 @@ class CorrelationIdFilter : WebFilter {
     ): Mono<Void> {
         val correlationId: String = exchange.request.headers[CORRELATION_ID_HEADER]?.firstOrNull() ?: UUID.randomUUID().toString()
         MDC.put(CORRELATION_ID_KEY, correlationId)
-        try {
-            return chain.filter(exchange)
-        } finally {
-            MDC.remove(CORRELATION_ID_KEY)
-        }
+
+        return chain.filter(exchange)
+            .contextWrite { context -> context.put(CORRELATION_ID_KEY, correlationId) }
+            .doFinally { MDC.remove(CORRELATION_ID_KEY) }
     }
 }
