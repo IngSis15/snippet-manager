@@ -70,6 +70,9 @@ dependencies {
 	// Redis Streams
 	implementation 'org.austral.ingsis:redis-streams-mvc:0.1.13'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	//MDC Propagation
+	implementation 'io.projectreactor:reactor-tools:3.4.0'
 }
 
 kotlin {
