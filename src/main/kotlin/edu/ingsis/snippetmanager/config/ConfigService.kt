@@ -12,6 +12,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
@@ -71,13 +72,14 @@ class ConfigService
         }
 
         fun getLintingConfig(userId: String): LintingSchemaDTO {
+            val correlationId = MDC.get("correlation-id")
             val sanitizedUserId = sanitizeUserId(userId)
             try {
-                val config = assetService.getAsset("linting", sanitizedUserId).block()
+                val config = assetService.getAsset("linting", sanitizedUserId, correlationId).block()
                 if (config == null) {
                     logger.info("No existing linting config found, creating default config for userId: $sanitizedUserId")
                     val defaultConfig = ConfigFactory.defaultLintingRules()
-                    assetService.createAsset("linting", sanitizedUserId, defaultConfig).block()
+                    assetService.createAsset("linting", sanitizedUserId, defaultConfig, correlationId).block()
                     return json.decodeFromString(defaultConfig)
                 } else {
                     return json.decodeFromString(config)
@@ -85,19 +87,20 @@ class ConfigService
             } catch (e: ResponseStatusException) {
                 logger.error("Error fetching linting config for userId: $sanitizedUserId", e)
                 val defaultConfig = ConfigFactory.defaultLintingRules()
-                assetService.createAsset("linting", sanitizedUserId, defaultConfig).block()
+                assetService.createAsset("linting", sanitizedUserId, defaultConfig, correlationId).block()
                 return json.decodeFromString(defaultConfig)
             }
         }
 
         fun getFormattingConfig(userId: String): FormattingSchemaDTO {
+            val correlationId = MDC.get("correlation-id")
             val sanitizedUserId = sanitizeUserId(userId)
             try {
-                val config = assetService.getAsset("formatting", sanitizedUserId).block()
+                val config = assetService.getAsset("formatting", sanitizedUserId, correlationId).block()
                 if (config == null) {
                     logger.info("No existing formatting config found, creating default config for userId: $sanitizedUserId")
                     val defaultConfig = ConfigFactory.defaultFormattingRules()
-                    assetService.createAsset("formatting", sanitizedUserId, defaultConfig).block()
+                    assetService.createAsset("formatting", sanitizedUserId, defaultConfig, correlationId).block()
                     return json.decodeFromString(defaultConfig)
                 } else {
                     return json.decodeFromString(config)
@@ -105,7 +108,7 @@ class ConfigService
             } catch (e: ResponseStatusException) {
                 logger.error("Error fetching formatting config for userId: $sanitizedUserId", e)
                 val defaultConfig = ConfigFactory.defaultFormattingRules()
-                assetService.createAsset("formatting", sanitizedUserId, defaultConfig).block()
+                assetService.createAsset("formatting", sanitizedUserId, defaultConfig, correlationId).block()
                 return json.decodeFromString(defaultConfig)
             }
         }
@@ -114,7 +117,8 @@ class ConfigService
             userId: String,
             config: LintingSchemaDTO,
         ): LintingSchemaDTO {
-            assetService.createAsset("linting", sanitizeUserId(userId), json.encodeToString(config)).block()
+            val correlationId = MDC.get("correlation-id")
+            assetService.createAsset("linting", sanitizeUserId(userId), json.encodeToString(config), correlationId).block()
             return config
         }
 
@@ -122,7 +126,8 @@ class ConfigService
             userId: String,
             config: FormattingSchemaDTO,
         ): FormattingSchemaDTO {
-            assetService.createAsset("formatting", sanitizeUserId(userId), json.encodeToString(config)).block()
+            val correlationId = MDC.get("correlation-id")
+            assetService.createAsset("formatting", sanitizeUserId(userId), json.encodeToString(config), correlationId).block()
             return config
         }
 
