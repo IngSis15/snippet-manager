@@ -10,8 +10,8 @@ object MdcLoggingUtils {
         status: LogTypes,
         logger: Logger,
         message: String,
+        correlationId: String,
     ) {
-        val correlationId = signal.contextView.getOrDefault("correlation-id", "unknown-correlation-id")
         MDC.put("correlation-id", correlationId)
         try {
             when (status) {
