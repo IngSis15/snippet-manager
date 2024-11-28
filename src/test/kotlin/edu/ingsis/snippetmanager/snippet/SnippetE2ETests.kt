@@ -100,7 +100,7 @@ class SnippetE2ETests {
         whenever(permissionService.canRead(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
         whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(permission))
         whenever(snippetRepository.findSnippetById(snippetId)).thenReturn(snippet)
-        whenever(assetService.getAsset("snippets", snippetId.toString())).thenReturn(Mono.just(snippetContent))
+        whenever(assetService.getAsset("snippets", snippetId.toString(), "")).thenReturn(Mono.just(snippetContent))
 
         mockMvc.perform(
             get("/v1/snippet/{id}", snippetId)
@@ -173,7 +173,7 @@ class SnippetE2ETests {
 
         whenever(printScriptService.validate(createSnippetDto.content)).thenReturn(Mono.just(ValidateResultDTO(true, emptyList())))
         whenever(snippetRepository.save(anyOrNull())).thenReturn(savedSnippet)
-        whenever(assetService.createAsset("snippets", "1", "println('Hello, world!')")).thenReturn(Mono.empty())
+        whenever(assetService.createAsset("snippets", "1", "println('Hello, world!')", "")).thenReturn(Mono.empty())
         whenever(lintService.lintSnippet(1L, "testUser")).thenAnswer { }
         whenever(formatService.formatSnippet(1L, "testUser")).thenAnswer { }
         whenever(permissionService.addPermission(anyOrNull(), anyLong(), anyString())).thenReturn(Mono.just(permissionResponse))
@@ -247,7 +247,7 @@ class SnippetE2ETests {
         whenever(printScriptService.validate(snippetDto.content)).thenReturn(Mono.just(ValidateResultDTO(true, emptyList())))
         whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
         whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(permissionResponse))
-        whenever(assetService.createAsset("snippets", snippetId.toString(), snippetDto.content)).thenReturn(Mono.empty())
+        whenever(assetService.createAsset("snippets", snippetId.toString(), snippetDto.content, "")).thenReturn(Mono.empty())
         whenever(snippetRepository.save(anyOrNull())).thenReturn(savedSnippet)
         whenever(lintService.lintSnippet(eq(snippetId), anyString())).thenAnswer { }
         whenever(formatService.formatSnippet(eq(snippetId), anyString())).thenAnswer { }
@@ -364,7 +364,7 @@ class SnippetE2ETests {
         whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
         doNothing().whenever(snippetRepository).deleteById(snippetId)
         whenever(permissionService.removePermission(anyOrNull(), eq(snippetId), anyString())).thenReturn(Mono.empty())
-        whenever(assetService.deleteAsset("snippets", snippetId.toString())).thenReturn(Mono.empty())
+        whenever(assetService.deleteAsset("snippets", snippetId.toString(), "")).thenReturn(Mono.empty())
 
         mockMvc.perform(
             delete("/v1/snippet/{id}", snippetId)
@@ -416,8 +416,8 @@ class SnippetE2ETests {
         whenever(snippetRepository.findSnippetById(2L)).thenReturn(snippet2)
 
         // Mock fetching snippet content
-        whenever(assetService.getAsset("snippets", "1")).thenReturn(Mono.just("content1"))
-        whenever(assetService.getAsset("snippets", "2")).thenReturn(Mono.just("content2"))
+        whenever(assetService.getAsset("snippets", "1", "")).thenReturn(Mono.just("content1"))
+        whenever(assetService.getAsset("snippets", "2", "")).thenReturn(Mono.just("content2"))
 
         // Perform GET request
         mockMvc.perform(
@@ -475,7 +475,7 @@ class SnippetE2ETests {
         whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
         whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(permissionResponse))
         whenever(snippetRepository.findSnippetById(eq(snippetId))).thenReturn(originalSnippet)
-        whenever(assetService.createAsset("snippets", snippetId.toString(), updatedContent)).thenReturn(Mono.empty())
+        whenever(assetService.createAsset("snippets", snippetId.toString(), updatedContent, "")).thenReturn(Mono.empty())
         whenever(snippetRepository.save(anyOrNull())).thenReturn(savedSnippet)
         whenever(lintService.lintSnippet(snippetId, "testUser")).thenAnswer { }
         whenever(formatService.formatSnippet(snippetId, "testUser")).thenAnswer { }
@@ -604,7 +604,7 @@ class SnippetE2ETests {
         val formattedContent = "Formatted snippet content"
 
         // Mock asset service behavior
-        whenever(assetService.getAsset("formatted", snippetId.toString())).thenReturn(Mono.just(formattedContent))
+        whenever(assetService.getAsset("formatted", snippetId.toString(), "")).thenReturn(Mono.just(formattedContent))
 
         // Perform GET request
         mockMvc.perform(

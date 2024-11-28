@@ -99,7 +99,7 @@ class ConfigE2ETests {
                 PermissionResponseDTO("1", "testUser", 1L, "OWNER", "testUser"),
             ),
         )
-        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString(), anyString())).thenReturn(Mono.empty())
 
         doNothing().whenever(lintSnippetProducer).publishEvent(anyOrNull())
 
@@ -133,7 +133,7 @@ class ConfigE2ETests {
             ),
         )
 
-        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString(), anyString())).thenReturn(Mono.empty())
 
         doNothing().whenever(formatSnippetProducer).publishEvent(any())
 
@@ -181,7 +181,7 @@ class ConfigE2ETests {
             }
             """.trimIndent()
 
-        whenever(assetService.getAsset(eq("linting"), eq(userId))).thenReturn(Mono.just(existingConfigJson))
+        whenever(assetService.getAsset(eq("linting"), eq(userId), anyString())).thenReturn(Mono.just(existingConfigJson))
 
         mockMvc.perform(
             get("/v1/config/linting")
@@ -192,7 +192,7 @@ class ConfigE2ETests {
             .andExpect(jsonPath("$.mandatory-variable-or-literal-in-println").value(false))
             .andExpect(jsonPath("$.mandatory-variable-or-literal-in-readInput").value(false))
 
-        verify(assetService, times(1)).getAsset(eq("linting"), eq(userId))
+        verify(assetService, times(1)).getAsset(eq("linting"), eq(userId), anyString())
         verifyNoInteractions(permissionService, lintSnippetProducer, formatSnippetProducer)
     }
 
@@ -200,8 +200,8 @@ class ConfigE2ETests {
     fun `should return default linting configuration when user has no config`() {
         val userId = "testUser"
 
-        whenever(assetService.getAsset(eq("linting"), eq(userId))).thenThrow(ResponseStatusException(HttpStatus.NOT_FOUND))
-        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.getAsset(eq("linting"), eq(userId), anyString())).thenThrow(ResponseStatusException(HttpStatus.NOT_FOUND))
+        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString(), anyString())).thenReturn(Mono.empty())
 
         mockMvc.perform(
             get("/v1/config/linting")
@@ -212,8 +212,8 @@ class ConfigE2ETests {
             .andExpect(jsonPath("$.mandatory-variable-or-literal-in-println").value(true))
             .andExpect(jsonPath("$.mandatory-variable-or-literal-in-readInput").value(true))
 
-        verify(assetService, times(1)).getAsset(eq("linting"), eq(userId))
-        verify(assetService, times(1)).createAsset(eq("linting"), eq(userId), anyString())
+        verify(assetService, times(1)).getAsset(eq("linting"), eq(userId), anyString())
+        verify(assetService, times(1)).createAsset(eq("linting"), eq(userId), anyString(), anyString())
     }
 
     @Test
@@ -238,7 +238,7 @@ class ConfigE2ETests {
             }
             """.trimIndent()
 
-        whenever(assetService.getAsset(eq("formatting"), eq(userId))).thenReturn(Mono.just(existingConfigJson))
+        whenever(assetService.getAsset(eq("formatting"), eq(userId), anyString())).thenReturn(Mono.just(existingConfigJson))
 
         mockMvc.perform(
             get("/v1/config/formatting")
@@ -251,7 +251,7 @@ class ConfigE2ETests {
             .andExpect(jsonPath("$.newLinesBeforePrintln").value(2))
             .andExpect(jsonPath("$.indent-inside-if").value(4))
 
-        verify(assetService, times(1)).getAsset(eq("formatting"), eq(userId))
+        verify(assetService, times(1)).getAsset(eq("formatting"), eq(userId), anyString())
         verifyNoInteractions(permissionService, lintSnippetProducer, formatSnippetProducer)
     }
 
@@ -259,8 +259,8 @@ class ConfigE2ETests {
     fun `should return default formatting configuration when user has no config`() {
         val userId = "testUser"
 
-        whenever(assetService.getAsset(eq("formatting"), eq(userId))).thenThrow(ResponseStatusException(HttpStatus.NOT_FOUND))
-        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.getAsset(eq("formatting"), eq(userId), anyString())).thenThrow(ResponseStatusException(HttpStatus.NOT_FOUND))
+        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString(), anyString())).thenReturn(Mono.empty())
 
         mockMvc.perform(
             get("/v1/config/formatting")
@@ -273,8 +273,8 @@ class ConfigE2ETests {
             .andExpect(jsonPath("$.newLinesBeforePrintln").value(0))
             .andExpect(jsonPath("$.indent-inside-if").value(4))
 
-        verify(assetService, times(1)).getAsset(eq("formatting"), eq(userId))
-        verify(assetService, times(1)).createAsset(eq("formatting"), eq(userId), anyString())
+        verify(assetService, times(1)).getAsset(eq("formatting"), eq(userId), anyString())
+        verify(assetService, times(1)).createAsset(eq("formatting"), eq(userId), anyString(), anyString())
     }
 
     @Test
@@ -298,7 +298,7 @@ class ConfigE2ETests {
         doNothing().whenever(lintSnippetProducer).publishEvent(anyOrNull())
 
         // Mock asset service behavior
-        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString(), anyString())).thenReturn(Mono.empty())
 
         // Perform PUT request
         mockMvc.perform(
@@ -313,7 +313,7 @@ class ConfigE2ETests {
             .andExpect(jsonPath("$.mandatory-variable-or-literal-in-readInput").value(false))
 
         // Verify interactions
-        verify(assetService, times(1)).createAsset(eq("linting"), eq(userId), anyString())
+        verify(assetService, times(1)).createAsset(eq("linting"), eq(userId), anyString(), anyString())
     }
 
     @Test
@@ -339,7 +339,7 @@ class ConfigE2ETests {
         doNothing().whenever(formatSnippetProducer).publishEvent(any())
 
         // Mock asset service behavior
-        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString(), anyString())).thenReturn(Mono.empty())
 
         // Perform PUT request
         mockMvc.perform(
@@ -356,6 +356,6 @@ class ConfigE2ETests {
             .andExpect(jsonPath("$.indent-inside-if").value(3))
 
         // Verify interactions
-        verify(assetService, times(1)).createAsset(eq("formatting"), eq(userId), anyString())
+        verify(assetService, times(1)).createAsset(eq("formatting"), eq(userId), anyString(), anyString())
     }
 }

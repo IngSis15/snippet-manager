@@ -55,7 +55,7 @@ class SnippetService(
         snippetDto: CreateSnippetDto,
         jwt: Jwt,
     ): SnippetDto {
-        val correlationId = MDC.get("correlation-id")
+        val correlationId = MDC.get("correlation-id") ?: ""
         validateSnippetContent(snippetDto.content)
         val snippet = translate(snippetDto)
         val savedSnippet = repository.save(snippet)
@@ -73,7 +73,7 @@ class SnippetService(
         id: Long,
         jwt: Jwt,
     ): SnippetDto {
-        val correlationId = MDC.get("correlation-id")
+        val correlationId = MDC.get("correlation-id") ?: ""
         validateSnippetContent(snippetDto.content)
         val canModify = permissionService.canModify(jwt, id).block() ?: false
         if (!canModify) {
@@ -108,7 +108,7 @@ class SnippetService(
         id: Long,
         jwt: Jwt,
     ) {
-        val correlationId = MDC.get("correlation-id")
+        val correlationId = MDC.get("correlation-id") ?: ""
         val canModify = permissionService.canModify(jwt, id).block() ?: false
         if (!canModify) {
             logger.warn("Permission denied for user: ${jwt.subject} to delete snippet: $id")
@@ -121,7 +121,7 @@ class SnippetService(
     }
 
     private fun fetchSnippetContent(id: Long): String {
-        val correlationId = MDC.get("correlation-id")
+        val correlationId = MDC.get("correlation-id") ?: ""
         return assetService.getAsset("snippets", id.toString(), correlationId).block()
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet content not found")
     }
@@ -161,7 +161,7 @@ class SnippetService(
         jwt: Jwt,
         id: Long,
     ): SnippetDto {
-        val correlationId = MDC.get("correlation-id")
+        val correlationId = MDC.get("correlation-id") ?: ""
         validateSnippetContent(snippet)
         val canModify = permissionService.canModify(jwt, id).block() ?: false
         if (!canModify) {
@@ -213,7 +213,7 @@ class SnippetService(
     }
 
     fun formatSnippet(snippetId: Long): String {
-        val correlationId = MDC.get("correlation-id")
+        val correlationId = MDC.get("correlation-id") ?: ""
         val formatted =
             assetService.getAsset("formatted", snippetId.toString(), correlationId).block()
                 ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")

@@ -72,7 +72,7 @@ class ConfigService
         }
 
         fun getLintingConfig(userId: String): LintingSchemaDTO {
-            val correlationId = MDC.get("correlation-id")
+            val correlationId = MDC.get("correlation-id") ?: ""
             val sanitizedUserId = sanitizeUserId(userId)
             try {
                 val config = assetService.getAsset("linting", sanitizedUserId, correlationId).block()
@@ -93,7 +93,7 @@ class ConfigService
         }
 
         fun getFormattingConfig(userId: String): FormattingSchemaDTO {
-            val correlationId = MDC.get("correlation-id")
+            val correlationId = MDC.get("correlation-id") ?: ""
             val sanitizedUserId = sanitizeUserId(userId)
             try {
                 val config = assetService.getAsset("formatting", sanitizedUserId, correlationId).block()
@@ -117,7 +117,7 @@ class ConfigService
             userId: String,
             config: LintingSchemaDTO,
         ): LintingSchemaDTO {
-            val correlationId = MDC.get("correlation-id")
+            val correlationId = MDC.get("correlation-id") ?: ""
             assetService.createAsset("linting", sanitizeUserId(userId), json.encodeToString(config), correlationId).block()
             return config
         }
@@ -126,7 +126,7 @@ class ConfigService
             userId: String,
             config: FormattingSchemaDTO,
         ): FormattingSchemaDTO {
-            val correlationId = MDC.get("correlation-id")
+            val correlationId = MDC.get("correlation-id") ?: ""
             assetService.createAsset("formatting", sanitizeUserId(userId), json.encodeToString(config), correlationId).block()
             return config
         }
