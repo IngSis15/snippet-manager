@@ -279,7 +279,8 @@ common: &default_settings
       enabled: true
 
       # A comma separated list of attribute keys whose values should be sent to New Relic.
-      #include:
+      include: correlation-id
+
 
       # A comma separated list of attribute keys whose values should not be sent to New Relic.
       #exclude:
