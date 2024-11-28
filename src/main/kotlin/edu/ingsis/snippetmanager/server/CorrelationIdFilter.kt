@@ -10,6 +10,8 @@ import java.util.UUID
 
 @Component
 class CorrelationIdFilter : WebFilter {
+    private val logger = org.slf4j.LoggerFactory.getLogger(CorrelationIdFilter::class.java)
+
     companion object {
         private const val CORRELATION_ID_KEY = "correlation-id"
         private const val CORRELATION_ID_HEADER = "X-Correlation-Id"
@@ -20,6 +22,7 @@ class CorrelationIdFilter : WebFilter {
         chain: WebFilterChain,
     ): Mono<Void> {
         val correlationId: String = exchange.request.headers[CORRELATION_ID_HEADER]?.firstOrNull() ?: UUID.randomUUID().toString()
+        logger.info("Correlation ID: $correlationId")
         MDC.put(CORRELATION_ID_KEY, correlationId)
         try {
             return chain.filter(exchange)
