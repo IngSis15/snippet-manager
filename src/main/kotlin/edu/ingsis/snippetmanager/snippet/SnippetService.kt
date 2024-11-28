@@ -11,6 +11,7 @@ import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.StatusDto
 import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -54,12 +55,12 @@ class SnippetService(
         snippetDto: CreateSnippetDto,
         jwt: Jwt,
     ): SnippetDto {
+        val correlationId = MDC.get("correlation-id")
         validateSnippetContent(snippetDto.content)
         val snippet = translate(snippetDto)
         val savedSnippet = repository.save(snippet)
         logger.info("Snippet created with ID: ${savedSnippet.id}")
-
-        assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content).block()
+        assetService.createAsset("snippets", savedSnippet.id.toString(), snippetDto.content, correlationId).block()
         lintService.lintSnippet(savedSnippet.id!!, jwt.subject)
         formatService.formatSnippet(savedSnippet.id!!, jwt.subject)
         val permission = permissionService.addPermission(jwt, savedSnippet.id!!, "OWNER").block()!!
@@ -72,6 +73,7 @@ class SnippetService(
         id: Long,
         jwt: Jwt,
     ): SnippetDto {
+        val correlationId = MDC.get("correlation-id")
         validateSnippetContent(snippetDto.content)
         val canModify = permissionService.canModify(jwt, id).block() ?: false
         if (!canModify) {
@@ -81,7 +83,7 @@ class SnippetService(
         val permission =
             permissionService.getPermission(jwt, id).block()
                 ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not found")
-        assetService.createAsset("snippets", id.toString(), snippetDto.content).block()
+        assetService.createAsset("snippets", id.toString(), snippetDto.content, correlationId).block()
 
         val savedSnippet =
             repository.save(
@@ -106,6 +108,7 @@ class SnippetService(
         id: Long,
         jwt: Jwt,
     ) {
+        val correlationId = MDC.get("correlation-id")
         val canModify = permissionService.canModify(jwt, id).block() ?: false
         if (!canModify) {
             logger.warn("Permission denied for user: ${jwt.subject} to delete snippet: $id")
@@ -113,12 +116,13 @@ class SnippetService(
         }
         repository.deleteById(id)
         permissionService.removePermission(jwt, id, "OWNER").block()
-        assetService.deleteAsset("snippets", id.toString()).block()
+        assetService.deleteAsset("snippets", id.toString(), correlationId).block()
         logger.info("Snippet with ID: $id successfully deleted")
     }
 
     private fun fetchSnippetContent(id: Long): String {
-        return assetService.getAsset("snippets", id.toString()).block()
+        val correlationId = MDC.get("correlation-id")
+        return assetService.getAsset("snippets", id.toString(), correlationId).block()
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet content not found")
     }
 
@@ -157,6 +161,7 @@ class SnippetService(
         jwt: Jwt,
         id: Long,
     ): SnippetDto {
+        val correlationId = MDC.get("correlation-id")
         validateSnippetContent(snippet)
         val canModify = permissionService.canModify(jwt, id).block() ?: false
         if (!canModify) {
@@ -171,7 +176,7 @@ class SnippetService(
             repository.findSnippetById(id)
                 ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
 
-        assetService.createAsset("snippets", id.toString(), snippet).block()
+        assetService.createAsset("snippets", id.toString(), snippet, correlationId).block()
 
         val savedSnippet =
             repository.save(
@@ -208,8 +213,9 @@ class SnippetService(
     }
 
     fun formatSnippet(snippetId: Long): String {
+        val correlationId = MDC.get("correlation-id")
         val formatted =
-            assetService.getAsset("formatted", snippetId.toString()).block()
+            assetService.getAsset("formatted", snippetId.toString(), correlationId).block()
                 ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found")
 
         return formatted

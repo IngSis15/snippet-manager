@@ -5,7 +5,6 @@ import edu.ingsis.snippetmanager.server.utils.MdcLoggingUtils.logWithMdc
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -29,8 +28,8 @@ class AssetService(
     override fun getAsset(
         container: String,
         key: String,
+        correlationId: String,
     ): Mono<String> {
-        val correlationId = MDC.get("correlation-id")
         return webClient.get()
             .uri("/v1/asset/$container/$key")
             .retrieve()
@@ -79,8 +78,8 @@ class AssetService(
         container: String,
         key: String,
         content: String,
+        correlationId: String,
     ): Mono<Void> {
-        val correlationId = MDC.get("correlation-id")
         return webClient.put()
             .uri("/v1/asset/$container/$key")
             .bodyValue(content)
@@ -114,8 +113,8 @@ class AssetService(
     override fun deleteAsset(
         container: String,
         key: String,
+        correlationId: String,
     ): Mono<Void> {
-        val correlationId = MDC.get("correlation-id")
         return webClient.delete()
             .uri("/v1/asset/$container/$key")
             .retrieve()
