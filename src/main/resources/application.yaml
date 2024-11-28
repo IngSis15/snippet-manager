@@ -15,6 +15,9 @@ spring:
     properties:
         hibernate:
             dialect: org.hibernate.dialect.PostgreSQLDialect
+  reactor:
+    debug-agent:
+      enabled: false
 
   security:
     oauth2:
