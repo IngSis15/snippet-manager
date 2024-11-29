@@ -12,6 +12,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
@@ -39,7 +40,7 @@ class ConfigService
                 setLintingConfig(userId, config)
 
                 permissionService.getAllOwnerSnippetPermissions(jwt).map { snippet ->
-                    val lintSnippetDto = LintSnippetDto(snippet.snippetId, userId)
+                    val lintSnippetDto = LintSnippetDto(snippet.snippetId, userId, MDC.get("correlation-id") ?: "un-traced")
                     lintSnippetProducer.publishEvent(json.encodeToString(lintSnippetDto))
                     logger.debug("Published lint snippet event for snippetId: ${snippet.snippetId}")
                 }
@@ -59,7 +60,7 @@ class ConfigService
                 setFormattingConfig(userId, config)
 
                 permissionService.getAllOwnerSnippetPermissions(jwt).map { snippet ->
-                    val formatSnippetDto = FormatSnippetDto(snippet.snippetId, userId)
+                    val formatSnippetDto = FormatSnippetDto(snippet.snippetId, userId, MDC.get("correlation-id") ?: "un-traced")
                     formatSnippetProducer.publishEvent(json.encodeToString(formatSnippetDto))
                     logger.debug("Published format snippet event for snippetId: ${snippet.snippetId}")
                 }
