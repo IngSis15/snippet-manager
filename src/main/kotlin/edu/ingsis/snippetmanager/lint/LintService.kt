@@ -4,6 +4,7 @@ import edu.ingsis.snippetmanager.config.ConfigService
 import edu.ingsis.snippetmanager.lint.dto.LintSnippetDto
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.lang.System.getLogger
@@ -23,7 +24,7 @@ class LintService
         ) {
             try {
                 saveDefaultConfig(userId)
-                val lintSnippetDto = LintSnippetDto(snippetId, userId.replace("|", ""))
+                val lintSnippetDto = LintSnippetDto(snippetId, userId.replace("|", ""), MDC.get("correlation-id") ?: "un-traced")
                 lintSnippetProducer.publishEvent(Json.encodeToString(lintSnippetDto))
                 logger.log(System.Logger.Level.INFO, "Linting process completed for snippetId: $snippetId")
             } catch (e: Exception) {

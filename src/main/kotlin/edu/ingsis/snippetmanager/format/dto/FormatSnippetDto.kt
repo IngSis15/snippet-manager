@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 class FormatSnippetDto(
     val snippetId: Long,
     val configId: String,
+    val correlationId: String,
 )

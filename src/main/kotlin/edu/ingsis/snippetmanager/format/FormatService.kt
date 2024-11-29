@@ -4,6 +4,7 @@ import edu.ingsis.snippetmanager.config.ConfigService
 import edu.ingsis.snippetmanager.format.dto.FormatSnippetDto
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.lang.System.getLogger
@@ -24,7 +25,7 @@ class FormatService
             try {
                 saveDefaultConfig(userId)
                 val sanitizedUserId = userId.replace("|", "")
-                val formatSnippetDto = FormatSnippetDto(snippetId, sanitizedUserId)
+                val formatSnippetDto = FormatSnippetDto(snippetId, sanitizedUserId, MDC.get("correlation-id") ?: "un-traced")
 
                 formatSnippetProducer.publishEvent(Json.encodeToString(formatSnippetDto))
 
