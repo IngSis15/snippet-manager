@@ -12,8 +12,6 @@ import edu.ingsis.snippetmanager.snippet.Snippet
 import edu.ingsis.snippetmanager.snippet.SnippetRepository
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.ExecuteResultDto
-import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
-import edu.ingsis.snippetmanager.snippet.dto.TestResponseDto
 import edu.ingsis.snippetmanager.test.TestService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,8 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.http.MediaType
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
@@ -113,7 +109,6 @@ class SnippetE2ETests {
     fun `should return 403 when user does not have permission`() {
         // Arrange: Mock permission response to deny access
         val snippetId = 1L
-        val jwt = mockJwt()
         whenever(permissionService.canRead(anyOrNull(), eq(snippetId))).thenReturn((false))
 
         // Act: Perform GET request on the endpoint
@@ -129,7 +124,6 @@ class SnippetE2ETests {
     fun `should return 404 when snippet is not found`() {
         // Arrange: Mock repository response for nonexistent snippet
         val snippetId = 1L
-        val jwt = mockJwt()
         whenever(permissionService.canRead(anyOrNull(), eq(snippetId))).thenReturn((true))
         whenever(
             permissionService.getPermission(anyOrNull(), eq(snippetId)),
@@ -389,7 +383,6 @@ class SnippetE2ETests {
     fun `should return all snippets for the user`() {
         val page = 0
         val size = 2
-        val pageable: Pageable = PageRequest.of(page, size)
 
         val permissions =
             listOf(
@@ -399,12 +392,6 @@ class SnippetE2ETests {
 
         val snippet1 = Snippet(1L, "Snippet 1", "Description 1", "printScript", Compliance.PENDING, ".ps")
         val snippet2 = Snippet(2L, "Snippet 2", "Description 2", "printScript", Compliance.PENDING, ".ps")
-
-        val snippets =
-            listOf(
-                SnippetDto(1L, "Snippet 1", "Description 1", "printScript", "PENDING", ".ps", "content1", "OWNER", "testUser"),
-                SnippetDto(2L, "Snippet 2", "Description 2", "printScript", "PENDING", ".ps", "content2", "OWNER", "testUser"),
-            )
 
         // Mock permission service
         whenever(permissionService.getAllSnippetPermissions(anyOrNull())).thenReturn(permissions)
@@ -454,18 +441,6 @@ class SnippetE2ETests {
                 language = "printScript",
                 compliance = Compliance.PENDING,
                 extension = ".ps",
-            )
-        val updatedSnippetDto =
-            SnippetDto(
-                id = snippetId,
-                name = "Original Snippet",
-                description = "Original Description",
-                language = "printScript",
-                content = updatedContent,
-                extension = ".ps",
-                permission = "OWNER",
-                author = "testUser",
-                compliance = "PENDING",
             )
 
         // Mock dependencies
@@ -635,13 +610,6 @@ class SnippetE2ETests {
                 snippet = snippet,
                 expectedOutput = listOf("Expected Output1", "Expected Output2"),
                 userInput = listOf("User Input"),
-            )
-
-        val testResponseDto =
-            TestResponseDto(
-                passed = true,
-                expectedOutput = listOf("Expected Output1", "Expected Output2"),
-                actualOutput = listOf("Expected Output1", "Expected Output2"),
             )
 
         whenever(testService.getTestById(testId)).thenReturn(testEntity)

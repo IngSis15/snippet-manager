@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestTemplate
 
 @Configuration
-class AppConfiguration(private val correlationIdInterceptor: CorrelationIdInterceptor) {
+class RestTemplateConfiguration(private val correlationIdInterceptor: CorrelationIdInterceptor) {
     @Bean
     fun restTemplate(): RestTemplate {
         val restTemplate = RestTemplate()
