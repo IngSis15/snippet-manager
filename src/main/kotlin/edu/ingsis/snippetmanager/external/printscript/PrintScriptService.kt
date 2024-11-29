@@ -3,86 +3,85 @@ package edu.ingsis.snippetmanager.external.printscript
 import edu.ingsis.snippetmanager.external.printscript.dto.ExecuteRequestDto
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateResultDTO
 import edu.ingsis.snippetmanager.snippet.dto.ExecuteResultDto
-import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
-import reactor.core.publisher.Mono
+import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.server.ResponseStatusException
 
-@Component
+@Service
 class PrintScriptService(
     @Value("\${services.printscript.url}") val baseUrl: String,
+    val restTemplate: RestTemplate,
 ) : PrintScriptApi {
     private val logger: Logger = LoggerFactory.getLogger(PrintScriptService::class.java)
 
-    lateinit var webClient: WebClient
+    override fun validate(content: String): ValidateResultDTO? {
+        val token = getToken() ?: throw IllegalStateException("Missing authentication token")
 
-    @PostConstruct
-    fun init() {
-        webClient = WebClient.create(baseUrl)
-    }
-
-    override fun validate(content: String): Mono<ValidateResultDTO> {
-        val token = getToken()
-
-        if (token == null) {
-            logger.warn("Token is null while validating content")
-            return Mono.error(IllegalStateException("Missing authentication token"))
+        val url = "$baseUrl/v1/validate"
+        return try {
+            val headers = HttpHeaders().apply { setBearerAuth(token) }
+            val request = HttpEntity(content, headers)
+            val response: ResponseEntity<ValidateResultDTO> =
+                restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    ValidateResultDTO::class.java,
+                )
+            logger.info("Validation successful for content length: {}", content.length)
+            response.body
+        } catch (ex: HttpClientErrorException) {
+            logger.error("Validation failed with status: {}, body: {}", ex.statusCode, ex.responseBodyAsString)
+            throw ResponseStatusException(ex.statusCode, "Validation failed")
+        } catch (ex: Exception) {
+            logger.error("Unexpected error during validation: {}", ex.message, ex)
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error during validation")
         }
-
-        return webClient.post()
-            .uri("/v1/validate")
-            .headers { it.setBearerAuth(token) }
-            .bodyValue(content)
-            .retrieve()
-            .bodyToMono(ValidateResultDTO::class.java)
-            .doOnSuccess { logger.info("Validation successful for content length: {}", content.length) }
-            .doOnError { ex ->
-                if (ex is WebClientResponseException) {
-                    logger.error("Validation failed with status: {}, body: {}", ex.statusCode, ex.responseBodyAsString)
-                } else {
-                    logger.error("Unexpected error during validation: {}", ex.message, ex)
-                }
-            }
     }
 
     override fun execute(
         snippetId: Long,
         input: List<String>,
-    ): Mono<ExecuteResultDto> {
-        val token = getToken()
+    ): ExecuteResultDto? {
+        val token = getToken() ?: throw IllegalStateException("Missing authentication token")
 
-        if (token == null) {
-            logger.warn("Token is null while executing snippetId: {}", snippetId)
-            return Mono.error(IllegalStateException("Missing authentication token"))
-        }
-
+        val url = "$baseUrl/v1/execute"
         val dto = ExecuteRequestDto("snippets", snippetId.toString(), input)
-
-        return webClient.post()
-            .uri("/v1/execute")
-            .headers { it.setBearerAuth(token) }
-            .bodyValue(dto)
-            .retrieve()
-            .bodyToMono(ExecuteResultDto::class.java)
-            .doOnSuccess { logger.info("Execution successful for snippetId: {}", snippetId) }
-            .doOnError { ex ->
-                if (ex is WebClientResponseException) {
-                    logger.error(
-                        "Execution failed for snippetId: {}, status: {}, body: {}",
-                        snippetId,
-                        ex.statusCode,
-                        ex.responseBodyAsString,
-                    )
-                } else {
-                    logger.error("Unexpected error during execution for snippetId: {}", snippetId, ex)
-                }
-            }
+        return try {
+            val headers = HttpHeaders().apply { setBearerAuth(token) }
+            val request = HttpEntity(dto, headers)
+            val response: ResponseEntity<ExecuteResultDto> =
+                restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    ExecuteResultDto::class.java,
+                )
+            logger.info("Execution successful for snippetId: {}", snippetId)
+            response.body
+        } catch (ex: HttpClientErrorException) {
+            logger.error(
+                "Execution failed for snippetId: {}, status: {}, body: {}",
+                snippetId,
+                ex.statusCode,
+                ex.responseBodyAsString,
+            )
+            throw ResponseStatusException(ex.statusCode, "Execution failed")
+        } catch (ex: Exception) {
+            logger.error("Unexpected error during execution for snippetId: {}", snippetId, ex)
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error during execution")
+        }
     }
 
     private fun getToken(): String? {

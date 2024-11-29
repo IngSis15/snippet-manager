@@ -2,38 +2,36 @@ package edu.ingsis.snippetmanager.external.permission
 
 import edu.ingsis.snippetmanager.external.permission.dto.PermissionResponseDTO
 import org.springframework.security.oauth2.jwt.Jwt
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 
 interface PermissionApi {
-    fun getAllSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO>
+    fun getAllSnippetPermissions(jwt: Jwt): List<PermissionResponseDTO>
 
-    fun getAllOwnerSnippetPermissions(jwt: Jwt): Flux<PermissionResponseDTO>
+    fun getAllOwnerSnippetPermissions(jwt: Jwt): List<PermissionResponseDTO>
 
     fun canRead(
         jwt: Jwt,
         snippetId: Long,
-    ): Mono<Boolean>
+    ): Boolean
 
     fun canModify(
         jwt: Jwt,
         snippetId: Long,
-    ): Mono<Boolean>
+    ): Boolean
 
     fun addPermission(
         jwt: Jwt,
         snippetId: Long,
         permission: String,
-    ): Mono<PermissionResponseDTO>
+    ): PermissionResponseDTO?
 
     fun removePermission(
         jwt: Jwt,
         snippetId: Long,
         permission: String,
-    ): Mono<PermissionResponseDTO>
+    ): PermissionResponseDTO?
 
     fun getPermission(
         jwt: Jwt,
         snippetId: Long,
-    ): Mono<PermissionResponseDTO>
+    ): PermissionResponseDTO?
 }

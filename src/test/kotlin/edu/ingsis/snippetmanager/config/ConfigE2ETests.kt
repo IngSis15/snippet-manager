@@ -1,7 +1,5 @@
 package edu.ingsis.snippetmanager.config
 import edu.ingsis.snippetmanager.SnippetManagerApplication
-import edu.ingsis.snippetmanager.config.configSchemas.FormattingSchemaDTO
-import edu.ingsis.snippetmanager.config.configSchemas.LintingSchemaDTO
 import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.permission.PermissionService
 import edu.ingsis.snippetmanager.external.permission.dto.PermissionResponseDTO
@@ -39,8 +37,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.web.server.ResponseStatusException
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 import kotlin.test.Test
 
 @ContextConfiguration(classes = [SnippetManagerApplication::class])
@@ -95,11 +91,11 @@ class ConfigE2ETests {
         val userId = "testUser"
 
         whenever(permissionService.getAllOwnerSnippetPermissions(anyOrNull())).thenReturn(
-            Flux.just(
+            listOf(
                 PermissionResponseDTO("1", "testUser", 1L, "OWNER", "testUser"),
             ),
         )
-        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString())).thenAnswer { }
 
         doNothing().whenever(lintSnippetProducer).publishEvent(anyOrNull())
 
@@ -128,12 +124,12 @@ class ConfigE2ETests {
         val userId = "testUser"
 
         whenever(permissionService.getAllOwnerSnippetPermissions(anyOrNull())).thenReturn(
-            Flux.just(
+            listOf(
                 PermissionResponseDTO("1", "testUser", 1L, "OWNER", "testUser"),
             ),
         )
 
-        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString())).thenAnswer { }
 
         doNothing().whenever(formatSnippetProducer).publishEvent(any())
 
@@ -166,12 +162,6 @@ class ConfigE2ETests {
     @Test
     fun `should return existing linting configuration for user`() {
         val userId = "testUser"
-        val existingConfig =
-            LintingSchemaDTO(
-                casingFormat = "camel case",
-                expressionAllowedInPrint = false,
-                expressionAllowedInReadInput = false,
-            )
         val existingConfigJson =
             """
             {
@@ -181,7 +171,7 @@ class ConfigE2ETests {
             }
             """.trimIndent()
 
-        whenever(assetService.getAsset(eq("linting"), eq(userId))).thenReturn(Mono.just(existingConfigJson))
+        whenever(assetService.getAsset(eq("linting"), eq(userId))).thenReturn(existingConfigJson)
 
         mockMvc.perform(
             get("/v1/config/linting")
@@ -201,7 +191,7 @@ class ConfigE2ETests {
         val userId = "testUser"
 
         whenever(assetService.getAsset(eq("linting"), eq(userId))).thenThrow(ResponseStatusException(HttpStatus.NOT_FOUND))
-        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString())).thenAnswer { }
 
         mockMvc.perform(
             get("/v1/config/linting")
@@ -219,14 +209,6 @@ class ConfigE2ETests {
     @Test
     fun `should return existing formatting configuration for user`() {
         val userId = "testUser"
-        val existingConfig =
-            FormattingSchemaDTO(
-                spaceBeforeColon = false,
-                spaceAfterColon = true,
-                noSpaceAroundAssignment = false,
-                newLinesBeforePrintln = 2,
-                indentSpaces = 4,
-            )
         val existingConfigJson =
             """
             {
@@ -238,7 +220,7 @@ class ConfigE2ETests {
             }
             """.trimIndent()
 
-        whenever(assetService.getAsset(eq("formatting"), eq(userId))).thenReturn(Mono.just(existingConfigJson))
+        whenever(assetService.getAsset(eq("formatting"), eq(userId))).thenReturn(existingConfigJson)
 
         mockMvc.perform(
             get("/v1/config/formatting")
@@ -260,7 +242,7 @@ class ConfigE2ETests {
         val userId = "testUser"
 
         whenever(assetService.getAsset(eq("formatting"), eq(userId))).thenThrow(ResponseStatusException(HttpStatus.NOT_FOUND))
-        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString())).thenAnswer { }
 
         mockMvc.perform(
             get("/v1/config/formatting")
@@ -290,7 +272,7 @@ class ConfigE2ETests {
             """.trimIndent()
 
         whenever(permissionService.getAllOwnerSnippetPermissions(anyOrNull())).thenReturn(
-            Flux.just(
+            listOf(
                 PermissionResponseDTO("1", "testUser", 1L, "OWNER", "testUser"),
             ),
         )
@@ -298,7 +280,7 @@ class ConfigE2ETests {
         doNothing().whenever(lintSnippetProducer).publishEvent(anyOrNull())
 
         // Mock asset service behavior
-        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.createAsset(eq("linting"), eq(userId), anyString())).thenAnswer { }
 
         // Perform PUT request
         mockMvc.perform(
@@ -331,7 +313,7 @@ class ConfigE2ETests {
             """.trimIndent()
 
         whenever(permissionService.getAllOwnerSnippetPermissions(anyOrNull())).thenReturn(
-            Flux.just(
+            listOf(
                 PermissionResponseDTO("1", "testUser", 1L, "OWNER", "testUser"),
             ),
         )
@@ -339,7 +321,7 @@ class ConfigE2ETests {
         doNothing().whenever(formatSnippetProducer).publishEvent(any())
 
         // Mock asset service behavior
-        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString())).thenReturn(Mono.empty())
+        whenever(assetService.createAsset(eq("formatting"), eq(userId), anyString())).thenAnswer { }
 
         // Perform PUT request
         mockMvc.perform(

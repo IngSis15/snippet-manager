@@ -12,8 +12,6 @@ import edu.ingsis.snippetmanager.snippet.Snippet
 import edu.ingsis.snippetmanager.snippet.SnippetRepository
 import edu.ingsis.snippetmanager.snippet.dto.CreateSnippetDto
 import edu.ingsis.snippetmanager.snippet.dto.ExecuteResultDto
-import edu.ingsis.snippetmanager.snippet.dto.SnippetDto
-import edu.ingsis.snippetmanager.snippet.dto.TestResponseDto
 import edu.ingsis.snippetmanager.test.TestService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,8 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.http.MediaType
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
@@ -43,8 +39,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 
 @ContextConfiguration(classes = [SnippetManagerApplication::class])
 @SpringBootTest
@@ -97,10 +91,10 @@ class SnippetE2ETests {
         val permission = PermissionResponseDTO("1", "testUser", snippetId, "OWNER", "testUser")
         val snippetContent = "Snippet Content"
 
-        whenever(permissionService.canRead(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
-        whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(permission))
+        whenever(permissionService.canRead(anyOrNull(), eq(snippetId))).thenReturn((true))
+        whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn((permission))
         whenever(snippetRepository.findSnippetById(snippetId)).thenReturn(snippet)
-        whenever(assetService.getAsset("snippets", snippetId.toString())).thenReturn(Mono.just(snippetContent))
+        whenever(assetService.getAsset("snippets", snippetId.toString())).thenReturn((snippetContent))
 
         mockMvc.perform(
             get("/v1/snippet/{id}", snippetId)
@@ -115,8 +109,7 @@ class SnippetE2ETests {
     fun `should return 403 when user does not have permission`() {
         // Arrange: Mock permission response to deny access
         val snippetId = 1L
-        val jwt = mockJwt()
-        whenever(permissionService.canRead(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(false))
+        whenever(permissionService.canRead(anyOrNull(), eq(snippetId))).thenReturn((false))
 
         // Act: Perform GET request on the endpoint
         mockMvc.perform(
@@ -131,11 +124,10 @@ class SnippetE2ETests {
     fun `should return 404 when snippet is not found`() {
         // Arrange: Mock repository response for nonexistent snippet
         val snippetId = 1L
-        val jwt = mockJwt()
-        whenever(permissionService.canRead(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
+        whenever(permissionService.canRead(anyOrNull(), eq(snippetId))).thenReturn((true))
         whenever(
             permissionService.getPermission(anyOrNull(), eq(snippetId)),
-        ).thenReturn(Mono.just(PermissionResponseDTO("1", "testUser", snippetId, "OWNER", "testUser")))
+        ).thenReturn((PermissionResponseDTO("1", "testUser", snippetId, "OWNER", "testUser")))
         whenever(snippetRepository.findSnippetById(snippetId)).thenReturn(null)
 
         // Act: Perform GET request on the endpoint
@@ -171,12 +163,12 @@ class SnippetE2ETests {
 
         val permissionResponse = PermissionResponseDTO("1", "testUser", savedSnippet.id!!, "OWNER", "testUser")
 
-        whenever(printScriptService.validate(createSnippetDto.content)).thenReturn(Mono.just(ValidateResultDTO(true, emptyList())))
+        whenever(printScriptService.validate(createSnippetDto.content)).thenReturn((ValidateResultDTO(true, emptyList())))
         whenever(snippetRepository.save(anyOrNull())).thenReturn(savedSnippet)
-        whenever(assetService.createAsset("snippets", "1", "println('Hello, world!')")).thenReturn(Mono.empty())
+        whenever(assetService.createAsset("snippets", "1", "println('Hello, world!')")).thenAnswer { }
         whenever(lintService.lintSnippet(1L, "testUser")).thenAnswer { }
         whenever(formatService.formatSnippet(1L, "testUser")).thenAnswer { }
-        whenever(permissionService.addPermission(anyOrNull(), anyLong(), anyString())).thenReturn(Mono.just(permissionResponse))
+        whenever(permissionService.addPermission(anyOrNull(), anyLong(), anyString())).thenReturn((permissionResponse))
 
         // Act: Perform POST request with MockMvc
         mockMvc.perform(
@@ -214,7 +206,7 @@ class SnippetE2ETests {
                 extension = ".ps",
             )
 
-        whenever(printScriptService.validate(createSnippetDto.content)).thenReturn(Mono.just(ValidateResultDTO(false, listOf())))
+        whenever(printScriptService.validate(createSnippetDto.content)).thenReturn((ValidateResultDTO(false, listOf())))
 
         // Act: Perform POST request with MockMvc
         mockMvc.perform(
@@ -244,10 +236,10 @@ class SnippetE2ETests {
         val savedSnippet =
             Snippet(snippetId, snippetDto.name, snippetDto.description, snippetDto.language, Compliance.PENDING, snippetDto.extension)
 
-        whenever(printScriptService.validate(snippetDto.content)).thenReturn(Mono.just(ValidateResultDTO(true, emptyList())))
-        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
-        whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(permissionResponse))
-        whenever(assetService.createAsset("snippets", snippetId.toString(), snippetDto.content)).thenReturn(Mono.empty())
+        whenever(printScriptService.validate(snippetDto.content)).thenReturn((ValidateResultDTO(true, emptyList())))
+        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn((true))
+        whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn((permissionResponse))
+        whenever(assetService.createAsset("snippets", snippetId.toString(), snippetDto.content)).thenAnswer { }
         whenever(snippetRepository.save(anyOrNull())).thenReturn(savedSnippet)
         whenever(lintService.lintSnippet(eq(snippetId), anyString())).thenAnswer { }
         whenever(formatService.formatSnippet(eq(snippetId), anyString())).thenAnswer { }
@@ -280,7 +272,7 @@ class SnippetE2ETests {
         val snippetId = 1L
         val snippetDto = CreateSnippetDto("Invalid Name", "Description", "printScript", "invalid content", ".ps")
 
-        whenever(printScriptService.validate(snippetDto.content)).thenReturn(Mono.just(ValidateResultDTO(false, emptyList())))
+        whenever(printScriptService.validate(snippetDto.content)).thenReturn((ValidateResultDTO(false, emptyList())))
 
         mockMvc.perform(
             post("/v1/snippet/{id}", snippetId)
@@ -306,8 +298,8 @@ class SnippetE2ETests {
         val snippetId = 1L
         val snippetDto = CreateSnippetDto("Name", "Description", "printScript", "content", ".ps")
 
-        whenever(printScriptService.validate(snippetDto.content)).thenReturn(Mono.just(ValidateResultDTO(true, emptyList())))
-        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(false))
+        whenever(printScriptService.validate(snippetDto.content)).thenReturn((ValidateResultDTO(true, emptyList())))
+        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn((false))
 
         mockMvc.perform(
             post("/v1/snippet/{id}", snippetId)
@@ -333,9 +325,9 @@ class SnippetE2ETests {
         val snippetId = 1L
         val snippetDto = CreateSnippetDto("Name", "Description", "printScript", "content", ".ps")
 
-        whenever(printScriptService.validate(snippetDto.content)).thenReturn(Mono.just(ValidateResultDTO(true, emptyList())))
-        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
-        whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn(Mono.empty())
+        whenever(printScriptService.validate(snippetDto.content)).thenReturn(ValidateResultDTO(true, emptyList()))
+        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(true)
+        whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn(null)
 
         mockMvc.perform(
             post("/v1/snippet/{id}", snippetId)
@@ -361,10 +353,10 @@ class SnippetE2ETests {
         val snippetId = 1L
 
         // Mock permissions and dependencies
-        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
+        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(true)
         doNothing().whenever(snippetRepository).deleteById(snippetId)
-        whenever(permissionService.removePermission(anyOrNull(), eq(snippetId), anyString())).thenReturn(Mono.empty())
-        whenever(assetService.deleteAsset("snippets", snippetId.toString())).thenReturn(Mono.empty())
+        whenever(permissionService.removePermission(anyOrNull(), eq(snippetId), anyString())).thenReturn(null)
+        whenever(assetService.deleteAsset("snippets", snippetId.toString())).thenAnswer { }
 
         mockMvc.perform(
             delete("/v1/snippet/{id}", snippetId)
@@ -378,7 +370,7 @@ class SnippetE2ETests {
         val snippetId = 1L
 
         // Mock permission check to deny access
-        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(false))
+        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn((false))
 
         mockMvc.perform(
             delete("/v1/snippet/{id}", snippetId)
@@ -391,7 +383,6 @@ class SnippetE2ETests {
     fun `should return all snippets for the user`() {
         val page = 0
         val size = 2
-        val pageable: Pageable = PageRequest.of(page, size)
 
         val permissions =
             listOf(
@@ -402,22 +393,16 @@ class SnippetE2ETests {
         val snippet1 = Snippet(1L, "Snippet 1", "Description 1", "printScript", Compliance.PENDING, ".ps")
         val snippet2 = Snippet(2L, "Snippet 2", "Description 2", "printScript", Compliance.PENDING, ".ps")
 
-        val snippets =
-            listOf(
-                SnippetDto(1L, "Snippet 1", "Description 1", "printScript", "PENDING", ".ps", "content1", "OWNER", "testUser"),
-                SnippetDto(2L, "Snippet 2", "Description 2", "printScript", "PENDING", ".ps", "content2", "OWNER", "testUser"),
-            )
-
         // Mock permission service
-        whenever(permissionService.getAllSnippetPermissions(anyOrNull())).thenReturn(Flux.fromIterable(permissions))
+        whenever(permissionService.getAllSnippetPermissions(anyOrNull())).thenReturn(permissions)
 
         // Mock repository behavior
         whenever(snippetRepository.findSnippetById(1L)).thenReturn(snippet1)
         whenever(snippetRepository.findSnippetById(2L)).thenReturn(snippet2)
 
         // Mock fetching snippet content
-        whenever(assetService.getAsset("snippets", "1")).thenReturn(Mono.just("content1"))
-        whenever(assetService.getAsset("snippets", "2")).thenReturn(Mono.just("content2"))
+        whenever(assetService.getAsset("snippets", "1")).thenReturn(("content1"))
+        whenever(assetService.getAsset("snippets", "2")).thenReturn(("content2"))
 
         // Perform GET request
         mockMvc.perform(
@@ -457,25 +442,13 @@ class SnippetE2ETests {
                 compliance = Compliance.PENDING,
                 extension = ".ps",
             )
-        val updatedSnippetDto =
-            SnippetDto(
-                id = snippetId,
-                name = "Original Snippet",
-                description = "Original Description",
-                language = "printScript",
-                content = updatedContent,
-                extension = ".ps",
-                permission = "OWNER",
-                author = "testUser",
-                compliance = "PENDING",
-            )
 
         // Mock dependencies
-        whenever(printScriptService.validate(updatedContent)).thenReturn(Mono.just(ValidateResultDTO(true, emptyList())))
-        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
-        whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(permissionResponse))
+        whenever(printScriptService.validate(updatedContent)).thenReturn((ValidateResultDTO(true, emptyList())))
+        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn((true))
+        whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn((permissionResponse))
         whenever(snippetRepository.findSnippetById(eq(snippetId))).thenReturn(originalSnippet)
-        whenever(assetService.createAsset("snippets", snippetId.toString(), updatedContent)).thenReturn(Mono.empty())
+        whenever(assetService.createAsset("snippets", snippetId.toString(), updatedContent)).thenAnswer { }
         whenever(snippetRepository.save(anyOrNull())).thenReturn(savedSnippet)
         whenever(lintService.lintSnippet(snippetId, "testUser")).thenAnswer { }
         whenever(formatService.formatSnippet(snippetId, "testUser")).thenAnswer { }
@@ -504,8 +477,8 @@ class SnippetE2ETests {
         val snippetId = 1L
         val updatedContent = "println('Updated content')"
 
-        whenever(printScriptService.validate(updatedContent)).thenReturn(Mono.just(ValidateResultDTO(true, emptyList())))
-        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(false))
+        whenever(printScriptService.validate(updatedContent)).thenReturn((ValidateResultDTO(true, emptyList())))
+        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn((false))
 
         mockMvc.perform(
             put("/v1/snippet/{id}", snippetId)
@@ -522,9 +495,9 @@ class SnippetE2ETests {
 
         val updatedContent = "println('Updated content')"
 
-        whenever(printScriptService.validate(updatedContent)).thenReturn(Mono.just(ValidateResultDTO(true, emptyList())))
-        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
-        whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn(Mono.empty())
+        whenever(printScriptService.validate(updatedContent)).thenReturn(ValidateResultDTO(true, emptyList()))
+        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(true)
+        whenever(permissionService.getPermission(anyOrNull(), eq(snippetId))).thenReturn(null)
 
         mockMvc.perform(
             put("/v1/snippet/{id}", snippetId)
@@ -541,11 +514,11 @@ class SnippetE2ETests {
 
         val updatedContent = "println('Updated content')"
 
-        whenever(printScriptService.validate(updatedContent)).thenReturn(Mono.just(ValidateResultDTO(true, emptyList())))
-        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
+        whenever(printScriptService.validate(updatedContent)).thenReturn((ValidateResultDTO(true, emptyList())))
+        whenever(permissionService.canModify(anyOrNull(), eq(snippetId))).thenReturn((true))
         whenever(
             permissionService.getPermission(anyOrNull(), eq(snippetId)),
-        ).thenReturn(Mono.just(PermissionResponseDTO("1", "testUser", snippetId, "OWNER", "testUser")))
+        ).thenReturn((PermissionResponseDTO("1", "testUser", snippetId, "OWNER", "testUser")))
         whenever(snippetRepository.findSnippetById(eq(snippetId))).thenReturn(null)
 
         mockMvc.perform(
@@ -604,7 +577,7 @@ class SnippetE2ETests {
         val formattedContent = "Formatted snippet content"
 
         // Mock asset service behavior
-        whenever(assetService.getAsset("formatted", snippetId.toString())).thenReturn(Mono.just(formattedContent))
+        whenever(assetService.getAsset("formatted", snippetId.toString())).thenReturn((formattedContent))
 
         // Perform GET request
         mockMvc.perform(
@@ -639,17 +612,10 @@ class SnippetE2ETests {
                 userInput = listOf("User Input"),
             )
 
-        val testResponseDto =
-            TestResponseDto(
-                passed = true,
-                expectedOutput = listOf("Expected Output1", "Expected Output2"),
-                actualOutput = listOf("Expected Output1", "Expected Output2"),
-            )
-
         whenever(testService.getTestById(testId)).thenReturn(testEntity)
-        whenever(permissionService.canRead(anyOrNull(), eq(snippetId))).thenReturn(Mono.just(true))
+        whenever(permissionService.canRead(anyOrNull(), eq(snippetId))).thenReturn((true))
         whenever(printScriptService.execute(snippetId, testEntity.userInput))
-            .thenReturn(Mono.just(ExecuteResultDto(listOf("Expected Output1", "Expected Output2"))))
+            .thenReturn((ExecuteResultDto(listOf("Expected Output1", "Expected Output2"))))
 
         // Perform GET request
         mockMvc.perform(
