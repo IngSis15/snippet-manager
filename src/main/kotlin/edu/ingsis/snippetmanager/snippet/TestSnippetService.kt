@@ -23,17 +23,17 @@ class TestSnippetService
             jwt: Jwt,
         ): TestResponseDto {
             val snippetId = testService.getTestById(testId).snippet.id!!
-            val canRead = permissionService.canRead(jwt, snippetId).block()
-            if (!canRead!!) {
+            val canRead = permissionService.canRead(jwt, snippetId)
+            if (!canRead) {
                 throw ResponseStatusException(HttpStatus.FORBIDDEN, "Permission denied")
             }
             val test = testService.getTestById(testId)
-            val actualOutput = printScriptService.execute(snippetId, test.userInput).map { it.result }
-            val passed = actualOutput.block() == test.expectedOutput
+            val actualOutput = printScriptService.execute(snippetId, test.userInput)!!.result
+            val passed = actualOutput == test.expectedOutput
             return TestResponseDto(
                 passed,
                 test.expectedOutput,
-                actualOutput.block()!!,
+                actualOutput,
             )
         }
     }

@@ -38,7 +38,7 @@ class ConfigService
             try {
                 setLintingConfig(userId, config)
 
-                permissionService.getAllOwnerSnippetPermissions(jwt).toIterable().map { snippet ->
+                permissionService.getAllOwnerSnippetPermissions(jwt).map { snippet ->
                     val lintSnippetDto = LintSnippetDto(snippet.snippetId, userId)
                     lintSnippetProducer.publishEvent(json.encodeToString(lintSnippetDto))
                     logger.debug("Published lint snippet event for snippetId: ${snippet.snippetId}")
@@ -58,7 +58,7 @@ class ConfigService
             try {
                 setFormattingConfig(userId, config)
 
-                permissionService.getAllOwnerSnippetPermissions(jwt).toIterable().map { snippet ->
+                permissionService.getAllOwnerSnippetPermissions(jwt).map { snippet ->
                     val formatSnippetDto = FormatSnippetDto(snippet.snippetId, userId)
                     formatSnippetProducer.publishEvent(json.encodeToString(formatSnippetDto))
                     logger.debug("Published format snippet event for snippetId: ${snippet.snippetId}")
@@ -73,11 +73,11 @@ class ConfigService
         fun getLintingConfig(userId: String): LintingSchemaDTO {
             val sanitizedUserId = sanitizeUserId(userId)
             try {
-                val config = assetService.getAsset("linting", sanitizedUserId).block()
+                val config = assetService.getAsset("linting", sanitizedUserId)
                 if (config == null) {
                     logger.info("No existing linting config found, creating default config for userId: $sanitizedUserId")
                     val defaultConfig = ConfigFactory.defaultLintingRules()
-                    assetService.createAsset("linting", sanitizedUserId, defaultConfig).block()
+                    assetService.createAsset("linting", sanitizedUserId, defaultConfig)
                     return json.decodeFromString(defaultConfig)
                 } else {
                     return json.decodeFromString(config)
@@ -85,7 +85,7 @@ class ConfigService
             } catch (e: ResponseStatusException) {
                 logger.error("Error fetching linting config for userId: $sanitizedUserId", e)
                 val defaultConfig = ConfigFactory.defaultLintingRules()
-                assetService.createAsset("linting", sanitizedUserId, defaultConfig).block()
+                assetService.createAsset("linting", sanitizedUserId, defaultConfig)
                 return json.decodeFromString(defaultConfig)
             }
         }
@@ -93,11 +93,11 @@ class ConfigService
         fun getFormattingConfig(userId: String): FormattingSchemaDTO {
             val sanitizedUserId = sanitizeUserId(userId)
             try {
-                val config = assetService.getAsset("formatting", sanitizedUserId).block()
+                val config = assetService.getAsset("formatting", sanitizedUserId)
                 if (config == null) {
                     logger.info("No existing formatting config found, creating default config for userId: $sanitizedUserId")
                     val defaultConfig = ConfigFactory.defaultFormattingRules()
-                    assetService.createAsset("formatting", sanitizedUserId, defaultConfig).block()
+                    assetService.createAsset("formatting", sanitizedUserId, defaultConfig)
                     return json.decodeFromString(defaultConfig)
                 } else {
                     return json.decodeFromString(config)
@@ -105,7 +105,7 @@ class ConfigService
             } catch (e: ResponseStatusException) {
                 logger.error("Error fetching formatting config for userId: $sanitizedUserId", e)
                 val defaultConfig = ConfigFactory.defaultFormattingRules()
-                assetService.createAsset("formatting", sanitizedUserId, defaultConfig).block()
+                assetService.createAsset("formatting", sanitizedUserId, defaultConfig)
                 return json.decodeFromString(defaultConfig)
             }
         }
@@ -114,7 +114,7 @@ class ConfigService
             userId: String,
             config: LintingSchemaDTO,
         ): LintingSchemaDTO {
-            assetService.createAsset("linting", sanitizeUserId(userId), json.encodeToString(config)).block()
+            assetService.createAsset("linting", sanitizeUserId(userId), json.encodeToString(config))
             return config
         }
 
@@ -122,7 +122,7 @@ class ConfigService
             userId: String,
             config: FormattingSchemaDTO,
         ): FormattingSchemaDTO {
-            assetService.createAsset("formatting", sanitizeUserId(userId), json.encodeToString(config)).block()
+            assetService.createAsset("formatting", sanitizeUserId(userId), json.encodeToString(config))
             return config
         }
 
