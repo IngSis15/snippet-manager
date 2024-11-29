@@ -1,7 +1,5 @@
 package edu.ingsis.snippetmanager.config
 import edu.ingsis.snippetmanager.SnippetManagerApplication
-import edu.ingsis.snippetmanager.config.configSchemas.FormattingSchemaDTO
-import edu.ingsis.snippetmanager.config.configSchemas.LintingSchemaDTO
 import edu.ingsis.snippetmanager.external.asset.AssetApi
 import edu.ingsis.snippetmanager.external.permission.PermissionService
 import edu.ingsis.snippetmanager.external.permission.dto.PermissionResponseDTO
@@ -164,12 +162,6 @@ class ConfigE2ETests {
     @Test
     fun `should return existing linting configuration for user`() {
         val userId = "testUser"
-        val existingConfig =
-            LintingSchemaDTO(
-                casingFormat = "camel case",
-                expressionAllowedInPrint = false,
-                expressionAllowedInReadInput = false,
-            )
         val existingConfigJson =
             """
             {
@@ -217,14 +209,6 @@ class ConfigE2ETests {
     @Test
     fun `should return existing formatting configuration for user`() {
         val userId = "testUser"
-        val existingConfig =
-            FormattingSchemaDTO(
-                spaceBeforeColon = false,
-                spaceAfterColon = true,
-                noSpaceAroundAssignment = false,
-                newLinesBeforePrintln = 2,
-                indentSpaces = 4,
-            )
         val existingConfigJson =
             """
             {

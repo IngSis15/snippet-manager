@@ -3,7 +3,6 @@ package edu.ingsis.snippetmanager.external.printscript
 import edu.ingsis.snippetmanager.external.printscript.dto.ExecuteRequestDto
 import edu.ingsis.snippetmanager.external.printscript.dto.ValidateResultDTO
 import edu.ingsis.snippetmanager.snippet.dto.ExecuteResultDto
-import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -22,14 +21,9 @@ import org.springframework.web.server.ResponseStatusException
 @Service
 class PrintScriptService(
     @Value("\${services.printscript.url}") val baseUrl: String,
+    val restTemplate: RestTemplate,
 ) : PrintScriptApi {
     private val logger: Logger = LoggerFactory.getLogger(PrintScriptService::class.java)
-    private lateinit var restTemplate: RestTemplate
-
-    @PostConstruct
-    fun init() {
-        restTemplate = RestTemplate()
-    }
 
     override fun validate(content: String): ValidateResultDTO? {
         val token = getToken() ?: throw IllegalStateException("Missing authentication token")

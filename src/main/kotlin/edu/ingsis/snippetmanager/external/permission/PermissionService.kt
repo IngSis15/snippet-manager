@@ -1,7 +1,6 @@
 package edu.ingsis.snippetmanager.external.permission
 
 import edu.ingsis.snippetmanager.external.permission.dto.PermissionResponseDTO
-import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -18,14 +17,9 @@ import org.springframework.web.server.ResponseStatusException
 @Service
 class PermissionService(
     @Value("\${services.permission.url}") val baseUrl: String,
+    val restTemplate: RestTemplate,
 ) : PermissionApi {
     private val logger: Logger = LoggerFactory.getLogger(PermissionService::class.java)
-    private lateinit var restTemplate: RestTemplate
-
-    @PostConstruct
-    fun init() {
-        restTemplate = RestTemplate()
-    }
 
     override fun getAllSnippetPermissions(jwt: Jwt): List<PermissionResponseDTO> {
         val url = "$baseUrl/permissions/user"

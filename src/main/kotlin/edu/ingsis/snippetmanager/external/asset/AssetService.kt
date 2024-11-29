@@ -1,6 +1,5 @@
 package edu.ingsis.snippetmanager.external.asset
 
-import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -16,14 +15,9 @@ import org.springframework.web.server.ResponseStatusException
 @Service
 class AssetService(
     @Value("\${services.asset.url}") val baseUrl: String,
+    val restTemplate: RestTemplate,
 ) : AssetApi {
     private val logger: Logger = LoggerFactory.getLogger(AssetService::class.java)
-    private lateinit var restTemplate: RestTemplate
-
-    @PostConstruct
-    fun init() {
-        restTemplate = RestTemplate()
-    }
 
     override fun getAsset(
         container: String,
