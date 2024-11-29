@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 class LintSnippetDto(
     val snippetId: Long,
     val configId: String,
+    val correlationId: String,
 )
