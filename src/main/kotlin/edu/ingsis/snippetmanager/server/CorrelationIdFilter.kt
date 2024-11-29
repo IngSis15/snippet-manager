@@ -14,8 +14,6 @@ import java.util.UUID
 
 @Component
 class CorrelationIdFilter : Filter {
-    private val logger = org.slf4j.LoggerFactory.getLogger(CorrelationIdFilter::class.java)
-
     companion object {
         private const val CORRELATION_ID_KEY = "correlation-id"
         private const val CORRELATION_ID_HEADER = "X-Correlation-Id"
@@ -31,7 +29,6 @@ class CorrelationIdFilter : Filter {
             val correlationId = request.getHeader(CORRELATION_ID_HEADER) ?: UUID.randomUUID().toString()
 
             MDC.put(CORRELATION_ID_KEY, correlationId)
-            logger.info("Generated Correlation ID: {}", correlationId)
             response.setHeader(CORRELATION_ID_HEADER, correlationId)
 
             try {
